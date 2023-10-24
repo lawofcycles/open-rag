@@ -19,7 +19,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain.llms.huggingface_pipeline import HuggingFacePipeline
-from langchain.prompts importPromptTemplate
+from langchain.prompts import PromptTemplate
 
 persist_dir = "./resource/211122_amlcft_guidelines.pdf"
 
