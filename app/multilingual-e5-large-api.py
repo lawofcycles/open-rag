@@ -21,7 +21,7 @@ def get_embeddings():
     # normalize embeddings
     embeddings = F.normalize(embeddings, p=2, dim=1)
     scores = (embeddings[:2] @ embeddings[2:].T) * 100
-    return jsonify({"embeddings": scores})
+    return jsonify({"embeddings": scores.tolist()})
 
 def average_pool(last_hidden_states: Tensor,
                  attention_mask: Tensor) -> Tensor:
