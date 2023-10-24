@@ -8,10 +8,10 @@ from llama_index import (
     download_loader,
     ServiceContext,
     LangchainEmbedding,
-
+    GPTFaissIndex,
 )
 from langchain.embeddings import HuggingFaceEmbeddings
-
+import faiss
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from langchain.document_loaders import TextLoader
 from langchain.text_splitter import CharacterTextSplitter
@@ -27,12 +27,6 @@ CJKPDFReader = download_loader("CJKPDFReader")
 loader = CJKPDFReader()
 documents = loader.load_data(file=persist_dir)
 
-# インデックスの生成
-index = GPTVectorStoreIndex.from_documents(
-    documents, # ドキュメント
-    service_context=service_context, # ServiceContext
-
-)
 # 埋め込みモデルの準備
 embed_model = LangchainEmbedding(HuggingFaceEmbeddings(
     model_name="intfloat/multilingual-e5-large"
@@ -40,16 +34,33 @@ embed_model = LangchainEmbedding(HuggingFaceEmbeddings(
     # embed_batch_size=1,
 )
 
-# # ServiceContextの準備
-# service_context = ServiceContext.from_defaults(
-#     embed_model=embed_model
+# ServiceContextの準備
+service_context = ServiceContext.from_defaults(
+    embed_model=embed_model
+)
+
+# dimensions of text-ada-embedding-002
+d = 1536 
+# コサイン類似度
+faiss_index = faiss.IndexFlatIP(d)
+# APIを実行しFaissのベクター検索ができるようにする
+index = GPTFaissIndex.from_documents(documents,
+                                     faiss_index=faiss_index,
+                                     service_context=service_context
+)
+# save index to disk
+index.save_to_disk(
+    'index_faiss.json', 
+    faiss_index_save_path="index_faiss_core.index"
+)
+
+
+# # インデックスの生成
+# index = GPTVectorStoreIndex.from_documents(
+#     documents, # ドキュメント
+#     service_context=service_context, # ServiceContext
+
 # )
-
-db = FAISS.from_documents(texts, embed_model)
-
-# 一番類似するチャンクをいくつロードするかを変数kに設定できる
-retriever = db.as_retriever(search_kwargs={"k": 3})
-
 
 # # クエリエンジンの作成
 # query_engine = index.as_query_engine(
