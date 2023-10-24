@@ -27,34 +27,29 @@ CJKPDFReader = download_loader("CJKPDFReader")
 loader = CJKPDFReader()
 documents = loader.load_data(file=persist_dir)
 
-text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
-    separator = "\n",
-    chunk_size=300,
-    chunk_overlap=20,
-)
-texts = text_splitter.split_documents(documents)
-print(len(texts))
+# インデックスの生成
+index = GPTVectorStoreIndex.from_documents(
+    documents, # ドキュメント
+    service_context=service_context, # ServiceContext
 
+)
 # 埋め込みモデルの準備
 embed_model = LangchainEmbedding(HuggingFaceEmbeddings(
     model_name="intfloat/multilingual-e5-large"
-))
-
-db = FAISS.from_documents(texts, embed_model)
-
-# 一番類似するチャンクをいくつロードするかを変数kに設定できる
-retriever = db.as_retriever(search_kwargs={"k": 3})
+    ),
+    # embed_batch_size=1,
+)
 
 # # ServiceContextの準備
 # service_context = ServiceContext.from_defaults(
 #     embed_model=embed_model
 # )
 
-# # インデックスの生成
-# index = GPTVectorStoreIndex.from_documents(
-#     documents, # ドキュメント
-#     service_context=service_context, # ServiceContext
-# )
+db = FAISS.from_documents(texts, embed_model)
+
+# 一番類似するチャンクをいくつロードするかを変数kに設定できる
+retriever = db.as_retriever(search_kwargs={"k": 3})
+
 
 # # クエリエンジンの作成
 # query_engine = index.as_query_engine(
