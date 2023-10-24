@@ -8,8 +8,9 @@ from llama_index import (
     download_loader,
     ServiceContext,
     LangchainEmbedding,
-    GPTFaissIndex,
 )
+from llama_index.vector_stores import FaissVectorStore
+
 from langchain.embeddings import HuggingFaceEmbeddings
 import faiss
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
