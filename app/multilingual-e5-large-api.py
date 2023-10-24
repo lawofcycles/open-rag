@@ -12,6 +12,14 @@ from llama_index import (
 )
 from langchain.embeddings import HuggingFaceEmbeddings
 
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from langchain.document_loaders import TextLoader
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.vectorstores import FAISS
+from langchain.chains import RetrievalQA
+from langchain.llms.huggingface_pipeline import HuggingFacePipeline
+from langchain import PromptTemplate
+
 persist_dir = "./resource/211122_amlcft_guidelines.pdf"
 
 CJKPDFReader = download_loader("CJKPDFReader")
@@ -19,29 +27,42 @@ CJKPDFReader = download_loader("CJKPDFReader")
 loader = CJKPDFReader()
 documents = loader.load_data(file=persist_dir)
 
+text_splitter = CharacterTextSplitter.from_tiktoken_encoder(
+    separator = "\n",
+    chunk_size=300,
+    chunk_overlap=20,
+)
+texts = text_splitter.split_documents(documents)
+print(len(texts))
+
 # 埋め込みモデルの準備
 embed_model = LangchainEmbedding(HuggingFaceEmbeddings(
     model_name="intfloat/multilingual-e5-large"
 ))
 
-# ServiceContextの準備
-service_context = ServiceContext.from_defaults(
-    embed_model=embed_model
-)
+db = FAISS.from_documents(texts, embed_model)
 
-# インデックスの生成
-index = GPTVectorStoreIndex.from_documents(
-    documents, # ドキュメント
-    service_context=service_context, # ServiceContext
-)
+# 一番類似するチャンクをいくつロードするかを変数kに設定できる
+retriever = db.as_retriever(search_kwargs={"k": 3})
 
-# クエリエンジンの作成
-query_engine = index.as_query_engine(
-    similarity_top_k=3  # 取得するチャンク数 (default:2)
-)
+# # ServiceContextの準備
+# service_context = ServiceContext.from_defaults(
+#     embed_model=embed_model
+# )
 
-response = query_engine.query("リスクベースのアプローチとは？")
-print(response)
+# # インデックスの生成
+# index = GPTVectorStoreIndex.from_documents(
+#     documents, # ドキュメント
+#     service_context=service_context, # ServiceContext
+# )
+
+# # クエリエンジンの作成
+# query_engine = index.as_query_engine(
+#     similarity_top_k=3  # 取得するチャンク数 (default:2)
+# )
+
+# response = query_engine.query("リスクベースのアプローチとは？")
+# print(response)
 
 # if not os.path.exists(persist_dir):
 #     os.mkdir(persist_dir)
