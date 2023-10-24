@@ -6,7 +6,11 @@ from llama_index import (
     StorageContext,
     load_index_from_storage,
     download_loader,
+    ServiceContext,
+    LangchainEmbedding,
+
 )
+from langchain.embeddings import HuggingFaceEmbeddings
 
 persist_dir = "./resource/211122_amlcft_guidelines.pdf"
 
@@ -14,7 +18,30 @@ CJKPDFReader = download_loader("CJKPDFReader")
 
 loader = CJKPDFReader()
 documents = loader.load_data(file=persist_dir)
-print(documents)
+
+# 埋め込みモデルの準備
+embed_model = LangchainEmbedding(HuggingFaceEmbeddings(
+    model_name="intfloat/multilingual-e5-large"
+))
+
+# ServiceContextの準備
+service_context = ServiceContext.from_defaults(
+    embed_model=embed_model
+)
+
+# インデックスの生成
+index = GPTVectorStoreIndex.from_documents(
+    documents, # ドキュメント
+    service_context=service_context, # ServiceContext
+)
+
+# クエリエンジンの作成
+query_engine = index.as_query_engine(
+    similarity_top_k=3  # 取得するチャンク数 (default:2)
+)
+
+response = query_engine.query("リスクベースのアプローチとは？")
+print(response)
 
 # if not os.path.exists(persist_dir):
 #     os.mkdir(persist_dir)
