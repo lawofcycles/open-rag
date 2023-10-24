@@ -1,7 +1,7 @@
 import os
 
 from llama_index import (
-    GPTVectorStoreIndex,
+    VectorStoreIndex,
     SimpleDirectoryReader,
     StorageContext,
     load_index_from_storage,
@@ -21,6 +21,7 @@ from langchain.chains import RetrievalQA
 from langchain.llms.huggingface_pipeline import HuggingFacePipeline
 from langchain.prompts import PromptTemplate
 
+
 persist_dir = "./resource/211122_amlcft_guidelines.pdf"
 
 CJKPDFReader = download_loader("CJKPDFReader")
@@ -33,9 +34,35 @@ embed_model = HuggingFaceBgeEmbeddings(
     model_name="intfloat/multilingual-e5-large"
     )
 
+import torch
+from llama_index.llms import HuggingFaceLLM
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+system_prompt = """以下は、タスクを説明する指示と、文脈のある入力の組み合わせです。要求を適切に満たす応答を書きなさい。"""
+
+# This will wrap the default prompts that are internal to llama-index
+query_wrapper_prompt = PromptTemplate("\n\n### 指示: \n{query_str}: \n\n\n### 応答")
+
+llm = HuggingFaceLLM(
+    context_window=1024,
+    max_new_tokens=256,
+    generate_kwargs={"temperature": 0.7, "do_sample": False},
+    system_prompt=system_prompt,
+    query_wrapper_prompt=query_wrapper_prompt,
+    tokenizer_name="novelai/nerdstash-tokenizer-v1",
+    model_name="stabilityai/japanese-stablelm-instruct-alpha-7b-v2",
+    device_map="auto",
+    stopping_ids=[50278, 50279, 50277, 1, 0],
+    tokenizer_kwargs={"max_length": 4096},
+    # uncomment this if using CUDA to reduce memory usage
+    # model_kwargs={"torch_dtype": torch.float16}
+)
+
 # ServiceContextの準備
 service_context = ServiceContext.from_defaults(
-    embed_model=embed_model
+    embed_model=embed_model,
+    chunk_size=1024,
+    llm=llm,
 )
 
 # dimensions of text-ada-embedding-002
@@ -46,7 +73,7 @@ vector_store = FaissVectorStore(faiss_index=faiss_index)
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 # APIを実行しFaissのベクター検索ができるようにする
-index = GPTVectorStoreIndex.from_documents(documents,
+index = VectorStoreIndex.from_documents(documents,
                                      service_context=service_context,
                                      storage_context=storage_context)
 
