@@ -9,10 +9,10 @@ from llama_index import (
     ServiceContext,
     LangchainEmbedding,
 )
+import faiss
 from llama_index.vector_stores import FaissVectorStore
 
 from langchain.embeddings import HuggingFaceEmbeddings
-import faiss
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from langchain.document_loaders import TextLoader
 from langchain.text_splitter import CharacterTextSplitter
@@ -44,24 +44,13 @@ service_context = ServiceContext.from_defaults(
 d = 1536 
 # コサイン類似度
 faiss_index = faiss.IndexFlatIP(d)
+vector_store = FaissVectorStore(faiss_index=faiss_index)
+storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
 # APIを実行しFaissのベクター検索ができるようにする
-index = GPTFaissIndex.from_documents(documents,
-                                     faiss_index=faiss_index,
-                                     service_context=service_context
-)
-# save index to disk
-index.save_to_disk(
-    'index_faiss.json', 
-    faiss_index_save_path="index_faiss_core.index"
-)
-
-
-# # インデックスの生成
-# index = GPTVectorStoreIndex.from_documents(
-#     documents, # ドキュメント
-#     service_context=service_context, # ServiceContext
-
-# )
+index = GPTVectorStoreIndex.from_documents(documents,
+                                     service_context=service_context,
+                                     storage_context=storage_context)
 
 # # クエリエンジンの作成
 # query_engine = index.as_query_engine(
