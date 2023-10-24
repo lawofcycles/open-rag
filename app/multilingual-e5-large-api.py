@@ -2,7 +2,7 @@ import torch.nn.functional as F
 
 from transformers import AutoTokenizer, AutoModel
 from flask import Flask, request, jsonify
-import torch
+from torch import Tensor
 
 
 def average_pool(last_hidden_states: Tensor,
