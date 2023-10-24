@@ -5,14 +5,13 @@ from flask import Flask, request, jsonify
 from torch import Tensor
 
 app = Flask(__name__)
-
+tokenizer = AutoTokenizer.from_pretrained('intfloat/multilingual-e5-large')
+model = AutoModel.from_pretrained('intfloat/multilingual-e5-large')
 
 @app.route("/embeddings", methods=["POST"])
 def get_embeddings():
     content = request.json
     input_texts = content["text"]
-    tokenizer = AutoTokenizer.from_pretrained('intfloat/multilingual-e5-large')
-    model = AutoModel.from_pretrained('intfloat/multilingual-e5-large')
     # Tokenize the input texts
     batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
 
@@ -20,7 +19,7 @@ def get_embeddings():
     embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
 
     # normalize embeddings
-    embeddings = F.normalize(embeddings, p=2, dim=1)
+    embeddings = F.normalize(embeddings, p=2, dim=1).tolist()
     scores = (embeddings[:2] @ embeddings[2:].T) * 100
     return jsonify({"embeddings": embeddings})
 
