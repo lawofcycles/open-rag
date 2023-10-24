@@ -11,7 +11,7 @@ from llama_index import (
 )
 import faiss
 from llama_index.vector_stores import FaissVectorStore
-
+from langchain.embeddings.huggingface import HuggingFaceBgeEmbeddings
 from langchain.embeddings import HuggingFaceEmbeddings
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from langchain.document_loaders import TextLoader
@@ -19,7 +19,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain.llms.huggingface_pipeline import HuggingFacePipeline
-from langchain import PromptTemplate
+from langchain.prompts importPromptTemplate
 
 persist_dir = "./resource/211122_amlcft_guidelines.pdf"
 
@@ -29,11 +29,9 @@ loader = CJKPDFReader()
 documents = loader.load_data(file=persist_dir)
 
 # 埋め込みモデルの準備
-embed_model = LangchainEmbedding(HuggingFaceEmbeddings(
+embed_model = HuggingFaceBgeEmbeddings(
     model_name="intfloat/multilingual-e5-large"
-    ),
-    # embed_batch_size=1,
-)
+    )
 
 # ServiceContextの準備
 service_context = ServiceContext.from_defaults(
