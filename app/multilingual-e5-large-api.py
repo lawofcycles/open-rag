@@ -41,8 +41,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 system_prompt = """以下は、タスクを説明する指示と、文脈のある入力の組み合わせです。要求を適切に満たす応答を書きなさい。"""
 
 # This will wrap the default prompts that are internal to llama-index
-prompt_string = """\n\n###指示:\n{query_str}:\n\n\n###応答"""
-query_wrapper_prompt = PromptTemplate(prompt_string)
+prompt_string = """\n\n### 指示: \n{query_str}: \n\n\n### 応答"""
+query_wrapper_prompt = PromptTemplate(r"\n\n### 指示: \n{query_str}: \n\n\n### 応答")
 
 llm = HuggingFaceLLM(
     context_window=1024,
