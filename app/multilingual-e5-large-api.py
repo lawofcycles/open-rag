@@ -56,6 +56,7 @@ pipe = pipeline(
     temperature=0,
     pad_token_id=tokenizer.eos_token_id,
     top_p=1,
+    do_sample=True,
     repetition_penalty=1.2,
 )
 llm = HuggingFacePipeline(pipeline=pipe)
@@ -81,7 +82,7 @@ index = VectorStoreIndex.from_documents(documents,
                                      )
 
 query_engine = index.as_query_engine(
-    similarity_top_k=3  # 取得するチャンク数 (default:2)
+    similarity_top_k=10  # 取得するチャンク数 (default:2)
 )
 
 response = query_engine.query("リスクベースのアプローチとは？")
