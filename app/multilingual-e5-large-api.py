@@ -131,8 +131,6 @@ service_context = ServiceContext.from_defaults(
 from llama_index.callbacks import CallbackManager, LlamaDebugHandler
 llama_debug_handler = LlamaDebugHandler()
 callback_manager = CallbackManager([llama_debug_handler])
-from llama_index.callbacks import CBEventType
-llama_debug_handler.get_event_pairs(CBEventType.LLM)[0][1].payload
 
 index = VectorStoreIndex.from_documents(
     documents,
@@ -151,6 +149,10 @@ def query(question):
     torch.cuda.empty_cache()
 
 query("リスクベースのアプローチとは？")
+
+from llama_index.callbacks import CBEventType
+llama_debug_handler.get_event_pairs(CBEventType.LLM)[0][1].payload
+
 
 # service_context = ServiceContext.from_defaults(
 #     llm=llm,
