@@ -71,9 +71,9 @@ service_context = ServiceContext.from_defaults(
 )
 
 # dimensions of text-ada-embedding-002
-d = 1536 
+index = faiss.IndexFlatL2(10)
 # コサイン類似度
-faiss_index = faiss.IndexFlatIP(d)
+faiss_index = faiss.IndexFlatIP(faiss_index=index)
 vector_store = FaissVectorStore(faiss_index=faiss_index)
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
