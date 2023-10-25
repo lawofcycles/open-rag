@@ -53,9 +53,8 @@ pipe = pipeline(
     model=model,
     tokenizer=tokenizer,
     max_length=2094,
-    temperature=0.0,
+    temperature=0.1,
     pad_token_id=tokenizer.eos_token_id,
-    top_p=1.0,
     do_sample=True,
     repetition_penalty=1.2,
 )
