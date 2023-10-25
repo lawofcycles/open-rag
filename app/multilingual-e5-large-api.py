@@ -101,11 +101,11 @@ chain_type_kwargs = {"prompt": PROMPT}
 
 llm = HuggingFacePipeline(pipeline=pipe)
 
-llama_debug_handler = LlamaDebugHandler()
-callback_manager = CallbackManager([llama_debug_handler])
+# llama_debug_handler = LlamaDebugHandler()
+# callback_manager = CallbackManager([llama_debug_handler])
 
 index = VectorStoreIndex.from_documents(documents,
-                                     service_context=service_context,
+                                    #  service_context=service_context,
                                     #  storage_context=storage_context
                                      )
 retriever = index.as_retriever(search_kwargs={"k": 3})
