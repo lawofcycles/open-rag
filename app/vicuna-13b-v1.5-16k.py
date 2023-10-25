@@ -166,6 +166,8 @@ def query(question):
     
 questions = [
     "リスクベースのアプローチとは？",
+    "金融機関によるリスク低減措置の具体的内容は？",
+    "経営陣はマネロンにどう関与すべき？",
 ]
 
 for question in questions:
