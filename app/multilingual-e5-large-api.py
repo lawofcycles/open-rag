@@ -114,7 +114,7 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
     tokenizer,
-    chunk_size=400,
+    chunk_size=4096-3,
     chunk_overlap=20,  # オーバーラップの最大トークン数
     separators=["\n= ", "\n== ", "\n=== ", "\n\n", "\n", "。", "「", "」", "！", "？", "、", "『", "』", "(", ")"," ", ""],
 )
@@ -151,8 +151,7 @@ def query(question):
 query("リスクベースのアプローチとは？")
 
 from llama_index.callbacks import CBEventType
-llama_debug_handler.get_event_pairs(CBEventType.LLM)
-
+print(llama_debug_handler.get_event_pairs(CBEventType.LLM))
 
 # service_context = ServiceContext.from_defaults(
 #     llm=llm,
