@@ -1,5 +1,6 @@
-import os
-
+import sys
+import logging
+logging.basicConfig(stream=sys.stdout, level=logging.WARNING, force=True)
 from llama_index import (
     VectorStoreIndex,
     SimpleDirectoryReader,
@@ -9,16 +10,16 @@ from llama_index import (
     ServiceContext,
     LangchainEmbedding,
 )
-import logging
-import sys
-logging.basicConfig(stream=sys.stdout, level=logging.WARNING, force=True)
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-
-import faiss
 from llama_index.vector_stores import FaissVectorStore
+from transformers import (
+    AutoTokenizer, 
+    AutoModelForCausalLM, 
+    BitsAndBytesConfig,
+    pipeline,
+)
+
 from langchain.embeddings.huggingface import HuggingFaceBgeEmbeddings
 from langchain.embeddings import HuggingFaceEmbeddings
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from langchain.document_loaders import TextLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS
@@ -54,19 +55,6 @@ embed_model = HuggingFaceBgeEmbeddings(
 model_name = "elyza/ELYZA-japanese-Llama-2-7b-instruct"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16,device_map="auto")
-
-quantization_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_use_double_quant=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.bfloat16,
-)
-
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
-    device_map="auto",
-    quantization_config=quantization_config,
-).eval()
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
