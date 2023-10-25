@@ -70,19 +70,6 @@ model_name = "elyza/ELYZA-japanese-Llama-2-7b-instruct"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16,device_map="auto")
 
-B_INST, E_INST = "[INST]", "[/INST]"
-B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-DEFAULT_SYSTEM_PROMPT =  "あなたは世界中で信頼されているQAシステムです。\n"
-"事前知識ではなく、常に提供されたコンテキスト情報を使用してクエリに回答してください。\n"
-text = "{context}\nユーザからの質問は次のとおりです。{question}"
-template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
-    bos_token=tokenizer.bos_token,
-    b_inst=B_INST,
-    system=f"{B_SYS}{DEFAULT_SYSTEM_PROMPT}{E_SYS}",
-    prompt=text,
-    e_inst=E_INST,
-)
-
 pipe = pipeline(
     "text-generation",
     model=model,
@@ -124,7 +111,7 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
     tokenizer,
-    chunk_size=4096-3,
+    chunk_size=200,
     chunk_overlap=20,  # オーバーラップの最大トークン数
     separators=["\n= ", "\n== ", "\n=== ", "\n\n", "\n", "。", "「", "」", "！", "？", "、", "『", "』", "(", ")"," ", ""],
 )
