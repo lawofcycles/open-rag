@@ -70,19 +70,25 @@ service_context = ServiceContext.from_defaults(
     llm=llm,
 )
 
-# dimensions of text-ada-embedding-002
-index = faiss.IndexFlatL2(10)
-# コサイン類似度
-faiss_index = faiss.IndexFlatIP(faiss_index=index)
-vector_store = FaissVectorStore(faiss_index=faiss_index)
-storage_context = StorageContext.from_defaults(vector_store=vector_store)
+# # dimensions of text-ada-embedding-002
+# index = faiss.IndexFlatL2(10)
+# # コサイン類似度
+# faiss_index = faiss.IndexFlatIP(faiss_index=index)
+# vector_store = FaissVectorStore(faiss_index=faiss_index)
+# storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 # APIを実行しFaissのベクター検索ができるようにする
 index = VectorStoreIndex.from_documents(documents,
                                      service_context=service_context,
-                                     storage_context=storage_context)
+                                    #  storage_context=storage_context
+                                     )
 
+query_engine = index.as_query_engine(
+    similarity_top_k=3  # 取得するチャンク数 (default:2)
+)
 
+response = query_engine.query("リスクベースのアプローチとは？")
+print(response)
 
 
 # system_prompt = """以下は、タスクを説明する指示と、文脈のある入力の組み合わせです。要求を適切に満たす応答を書きなさい。"""
