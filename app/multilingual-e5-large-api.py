@@ -128,6 +128,12 @@ service_context = ServiceContext.from_defaults(
     llm=llm,
 )
 
+from llama_index.callbacks import CallbackManager, LlamaDebugHandler
+llama_debug_handler = LlamaDebugHandler()
+callback_manager = CallbackManager([llama_debug_handler])
+from llama_index.callbacks import CBEventType
+llama_debug_handler.get_event_pairs(CBEventType.LLM)[0][1].payload
+
 index = VectorStoreIndex.from_documents(
     documents,
     service_context=service_context,
