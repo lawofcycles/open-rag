@@ -46,10 +46,7 @@ DEFAULT_SYSTEM_PROMPT = "あなたは誠実で優秀な日本人のアシスタ�
 
 model_name = "elyza/ELYZA-japanese-Llama-2-7b-instruct"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype="auto")
-
-if torch.cuda.is_available():
-    model = model.to("cuda")
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16,torch_dtype="auto")
 
 pipe = pipeline(
     "text-generation",
