@@ -96,7 +96,7 @@ pipe = pipeline(
     "text-generation",
     model=model,
     tokenizer=tokenizer,
-    max_new_tokens=4096,
+    max_new_tokens=500,
     # temperature=0.1,
     pad_token_id=tokenizer.eos_token_id,
     # do_sample=True,
@@ -136,7 +136,7 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
     tokenizer,
-    chunk_size=4096-3,
+    chunk_size=500-3,
     chunk_overlap=20,  # オーバーラップの最大トークン数
     separators=["\n= ", "\n== ", "\n=== ", "\n\n", "\n", "。", "「", "」", "！", "？", "、", "『", "』", "(", ")"," ", ""],
 )
