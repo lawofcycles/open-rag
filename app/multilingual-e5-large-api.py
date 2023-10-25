@@ -9,6 +9,7 @@ from llama_index import (
     download_loader,
     ServiceContext,
     LangchainEmbedding,
+    SimpleKeywordTableIndex,
 )
 from llama_index.vector_stores import FaissVectorStore
 from transformers import (
@@ -17,6 +18,21 @@ from transformers import (
     BitsAndBytesConfig,
     pipeline,
 )
+
+# import QueryBundle
+from llama_index import QueryBundle
+
+# import NodeWithScore
+from llama_index.schema import NodeWithScore
+
+# Retrievers
+from llama_index.retrievers import (
+    BaseRetriever,
+    VectorIndexRetriever,
+    KeywordTableSimpleRetriever,
+)
+
+from typing import List
 
 from langchain.embeddings.huggingface import HuggingFaceBgeEmbeddings
 from langchain.embeddings import HuggingFaceEmbeddings
@@ -37,8 +53,6 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from llama_index.node_parser import SimpleNodeParser
 from llama_index import ServiceContext
 from llama_index.callbacks import CBEventType
-# llama_debug_handler.get_event_pairs(CBEventType.LLM)[0][1].payload
-
 
 persist_dir = "./resource/211122_amlcft_guidelines.pdf"
 
@@ -89,25 +103,30 @@ chain_type_kwargs = {"prompt": PROMPT}
 
 llm = HuggingFacePipeline(pipeline=pipe)
 
-# llama_debug_handler = LlamaDebugHandler()
-# callback_manager = CallbackManager([llama_debug_handler])
-
-index = VectorStoreIndex.from_documents(documents,
-                                    #  service_context=service_context,
-                                    #  storage_context=storage_context
-                                     )
-retriever = index.as_retriever(search_kwargs={"k": 3})
-
-qa = RetrievalQA.from_chain_type(
+# ServiceContextの準備
+service_context = ServiceContext.from_defaults(
+    embed_model=embed_model,
+    chunk_size=1024,
     llm=llm,
-    retriever=retriever,
-    chain_type="stuff",
-    return_source_documents=True,
-    chain_type_kwargs=chain_type_kwargs,
-    verbose=True,
 )
 
-qa("リスクベースのアプローチとは？")
+index = VectorStoreIndex.from_documents(
+    documents,
+    service_context=service_context,
+)
+
+query_engine = index.as_query_engine(
+    similarity_top_k=3,
+    text_qa_template=PROMPT,
+)
+
+def query(question):
+    print(f"Q: {question}")
+    response = query_engine.query(question).response.strip()
+    print(f"A: {response}\n")
+    torch.cuda.empty_cache()
+
+query("リスクベースのアプローチとは？")
 
 # service_context = ServiceContext.from_defaults(
 #     llm=llm,
