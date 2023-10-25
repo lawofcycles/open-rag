@@ -175,7 +175,7 @@ def query(question):
     print(f"A: {response}\n")
     torch.cuda.empty_cache()
 
-query("リスクベースのアプローチとは？")
+query("マネロン・テロ資金供与対策におけるリスクベース・アプローチとは？")
 
 from llama_index.callbacks import CBEventType
 llama_debug_handler.get_event_pairs(CBEventType.LLM)[0][1].payload
