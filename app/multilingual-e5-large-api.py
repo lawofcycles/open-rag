@@ -111,7 +111,7 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
     tokenizer,
-    chunk_size=200,
+    chunk_size=400,
     chunk_overlap=20,  # オーバーラップの最大トークン数
     separators=["\n= ", "\n== ", "\n=== ", "\n\n", "\n", "。", "「", "」", "！", "？", "、", "『", "』", "(", ")"," ", ""],
 )
@@ -131,7 +131,7 @@ index = VectorStoreIndex.from_documents(
 )
 
 query_engine = index.as_query_engine(
-    similarity_top_k=3,
+    similarity_top_k=10,
     text_qa_template=CHAT_TEXT_QA_PROMPT,
 )
 
