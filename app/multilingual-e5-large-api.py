@@ -9,6 +9,11 @@ from llama_index import (
     ServiceContext,
     LangchainEmbedding,
 )
+import logging
+import sys
+logging.basicConfig(stream=sys.stdout, level=logging.WARNING, force=True)
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+
 import faiss
 from llama_index.vector_stores import FaissVectorStore
 from langchain.embeddings.huggingface import HuggingFaceBgeEmbeddings
@@ -20,6 +25,18 @@ from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain.llms.huggingface_pipeline import HuggingFacePipeline
 from langchain.prompts import PromptTemplate
+import torch
+from llama_index.llms import HuggingFaceLLM
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
+from langchain.llms import HuggingFacePipeline
+from llama_index.callbacks import CallbackManager, LlamaDebugHandler
+from llama_index.llms.base import ChatMessage, MessageRole
+from llama_index.prompts.base import ChatPromptTemplate
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from llama_index.node_parser import SimpleNodeParser
+from llama_index import ServiceContext
+from llama_index.callbacks import CBEventType
+llama_debug_handler.get_event_pairs(CBEventType.LLM)[0][1].payload
 
 
 persist_dir = "./resource/211122_amlcft_guidelines.pdf"
@@ -29,172 +46,104 @@ CJKPDFReader = download_loader("CJKPDFReader")
 loader = CJKPDFReader()
 documents = loader.load_data(file=persist_dir)
 
-# 埋め込みモデルの準備
+embed_model_name = "intfloat/multilingual-e5-large"
 embed_model = HuggingFaceBgeEmbeddings(
-    model_name="intfloat/multilingual-e5-large"
+    model_name=embed_model_name,
     )
 
-import torch
-from llama_index.llms import HuggingFaceLLM
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
-from langchain.llms import HuggingFacePipeline
-import torch
-from transformers import AutoTokenizer,AutoModelForCausalLM
-import torch
+model_name = "elyza/ELYZA-japanese-Llama-2-7b-instruct"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16,device_map="auto")
 
-from transformers import pipeline
-from langchain.llms import HuggingFacePipeline
-
-from langchain.embeddings import HuggingFaceEmbeddings
-from llama_index import LangchainEmbedding
-from typing import Any, List
-
-embed_model_name = "efederici/e5-base-multilingual-4096"
-llm_model_name = "lmsys/vicuna-13b-v1.5-16k"
-
-# トークナイザーの初期化
-tokenizer = AutoTokenizer.from_pretrained(
-    llm_model_name,
-    use_fast=True,
+quantization_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16,
 )
 
-# LLMの読み込み
 model = AutoModelForCausalLM.from_pretrained(
-    llm_model_name,
-    torch_dtype=torch.float16,
+    model_name,
     device_map="auto",
+    quantization_config=quantization_config,
+).eval()
+
+B_INST, E_INST = "[INST]", "[/INST]"
+B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
+DEFAULT_SYSTEM_PROMPT =  "あなたは世界中で信頼されているQAシステムです。\n"
+"事前知識ではなく、常に提供されたコンテキスト情報を使用してクエリに回答してください。\n"
+text = "{context}\nユーザからの質問は次のとおりです。{question}"
+template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
+    bos_token=tokenizer.bos_token,
+    b_inst=B_INST,
+    system=f"{B_SYS}{DEFAULT_SYSTEM_PROMPT}{E_SYS}",
+    prompt=text,
+    e_inst=E_INST,
 )
 
-# パイプラインの作成
 pipe = pipeline(
     "text-generation",
     model=model,
     tokenizer=tokenizer,
-    max_new_tokens=4096,
+    # max_length=2094,
+    # temperature=0.1,
+    pad_token_id=tokenizer.eos_token_id,
+    # do_sample=True,
+    repetition_penalty=1.2,
+)
+PROMPT = PromptTemplate(
+    template=template,
+    input_variables=["context", "question"],
+    template_format="f-string"
 )
 
-# LLMの初期化
+chain_type_kwargs = {"prompt": PROMPT}
+
 llm = HuggingFacePipeline(pipeline=pipe)
 
-# # ServiceContextの準備
-# service_context = ServiceContext.from_defaults(
-#     embed_model=embed_model,
-#     chunk_size=1024,
-#     llm=llm,
-# )
-
-# # dimensions of text-ada-embedding-002
-# index = faiss.IndexFlatL2(10)
-# # コサイン類似度
-# faiss_index = faiss.IndexFlatIP(faiss_index=index)
-# vector_store = FaissVectorStore(faiss_index=faiss_index)
-# storage_context = StorageContext.from_defaults(vector_store=vector_store)
-
-from llama_index.callbacks import CallbackManager, LlamaDebugHandler
 llama_debug_handler = LlamaDebugHandler()
 callback_manager = CallbackManager([llama_debug_handler])
-
-from llama_index.llms.base import ChatMessage, MessageRole
-from llama_index.prompts.base import ChatPromptTemplate
-
-# QAシステムプロンプト
-TEXT_QA_SYSTEM_PROMPT = ChatMessage(
-    content=(
-        "あなたは世界中で信頼されているQAシステムです。\n"
-        "事前知識ではなく、常に提供されたコンテキスト情報を使用してクエリに回答してください。\n"
-        "従うべきいくつかのルール:\n"
-        "1. 回答内で指定されたコンテキストを直接参照しないでください。\n"
-        "2. 「コンテキストに基づいて、...」や「コンテキスト情報は...」、またはそれに類するような記述は避けてください。"
-    ),
-    role=MessageRole.SYSTEM,
-)
-
-# QAプロンプトテンプレートメッセージ
-TEXT_QA_PROMPT_TMPL_MSGS = [
-    TEXT_QA_SYSTEM_PROMPT,
-    ChatMessage(
-        content=(
-            "コンテキスト情報は以下のとおりです。\n"
-            "---------------------\n"
-            "{context_str}\n"
-            "---------------------\n"
-            "事前知識ではなくコンテキスト情報を考慮して、クエリに答えます。\n"
-            "Query: {query_str}\n"
-            "Answer: "
-        ),
-        role=MessageRole.USER,
-    ),
-]
-
-# チャットQAプロンプト
-CHAT_TEXT_QA_PROMPT = ChatPromptTemplate(message_templates=TEXT_QA_PROMPT_TMPL_MSGS)
-
-# チャットRefineプロンプトテンプレートメッセージ
-CHAT_REFINE_PROMPT_TMPL_MSGS = [
-    ChatMessage(
-        content=(
-            "あなたは、既存の回答を改良する際に2つのモードで厳密に動作するQAシステムのエキスパートです。\n"
-            "1. 新しいコンテキストを使用して元の回答を**書き直す**。\n"
-            "2. 新しいコンテキストが役に立たない場合は、元の回答を**繰り返す**。\n"
-            "回答内で元の回答やコンテキストを直接参照しないでください。\n"
-            "疑問がある場合は、元の答えを繰り返してください。"
-            "New Context: {context_msg}\n"
-            "Query: {query_str}\n"
-            "Original Answer: {existing_answer}\n"
-            "New Answer: "
-        ),
-        role=MessageRole.USER,
-    )
-]
-
-# チャットRefineプロンプト
-CHAT_REFINE_PROMPT = ChatPromptTemplate(message_templates=CHAT_REFINE_PROMPT_TMPL_MSGS)
-
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from llama_index.node_parser import SimpleNodeParser
-from llama_index import ServiceContext
-
-text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
-    tokenizer,
-    chunk_size=4096-3,
-    chunk_overlap=20,  # オーバーラップの最大トークン数
-    separators=["\n= ", "\n== ", "\n=== ", "\n\n", "\n", "。", "「", "」", "！", "？", "、", "『", "』", "(", ")"," ", ""],
-)
-node_parser = SimpleNodeParser(text_splitter=text_splitter)
-
-service_context = ServiceContext.from_defaults(
-    llm=llm,
-    embed_model=embed_model,
-    node_parser=node_parser,
-    callback_manager=callback_manager,
-)
 
 index = VectorStoreIndex.from_documents(documents,
                                      service_context=service_context,
                                     #  storage_context=storage_context
                                      )
-# クエリエンジンの準備
-query_engine = index.as_query_engine(
-    similarity_top_k=3,
-    text_qa_template=CHAT_TEXT_QA_PROMPT,
-    refine_template=CHAT_REFINE_PROMPT,
+retriever = index.as_retriever(search_kwargs={"k": 3})
+
+qa = RetrievalQA.from_chain_type(
+    llm=llm,
+    retriever=retriever,
+    chain_type="stuff",
+    return_source_documents=True,
+    chain_type_kwargs=chain_type_kwargs,
+    verbose=True,
 )
 
-import logging
-import sys
-logging.basicConfig(stream=sys.stdout, level=logging.WARNING, force=True)
-import torch
+qa("リスクベースのアプローチとは？")
 
-def query(question):
-    print(f"Q: {question}")
-    response = query_engine.query(question).response.strip()
-    print(f"A: {response}\n")
-    torch.cuda.empty_cache()
+# service_context = ServiceContext.from_defaults(
+#     llm=llm,
+#     embed_model=embed_model,
+#     node_parser=node_parser,
+#     callback_manager=callback_manager,
+# )
 
-query("マネロン・テロ資金供与対策におけるリスクベース・アプローチとは？")
+# # クエリエンジンの準備
+# query_engine = index.as_query_engine(
+#     similarity_top_k=3,
+#     text_qa_template=CHAT_TEXT_QA_PROMPT,
+#     refine_template=CHAT_REFINE_PROMPT,
+# )
 
-from llama_index.callbacks import CBEventType
-llama_debug_handler.get_event_pairs(CBEventType.LLM)[0][1].payload
+
+# def query(question):
+#     print(f"Q: {question}")
+#     response = query_engine.query(question).response.strip()
+#     print(f"A: {response}\n")
+#     torch.cuda.empty_cache()
+
+
+
 
 # system_prompt = """以下は、タスクを説明する指示と、文脈のある入力の組み合わせです。要求を適切に満たす応答を書きなさい。"""
 
