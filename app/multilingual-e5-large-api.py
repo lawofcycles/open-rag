@@ -36,7 +36,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from llama_index.node_parser import SimpleNodeParser
 from llama_index import ServiceContext
 from llama_index.callbacks import CBEventType
-llama_debug_handler.get_event_pairs(CBEventType.LLM)[0][1].payload
+# llama_debug_handler.get_event_pairs(CBEventType.LLM)[0][1].payload
 
 
 persist_dir = "./resource/211122_amlcft_guidelines.pdf"
