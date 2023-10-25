@@ -93,13 +93,32 @@ pipe = pipeline(
     # do_sample=True,
     repetition_penalty=1.2,
 )
-PROMPT = PromptTemplate(
-    template=template,
-    input_variables=["context", "question"],
-    template_format="f-string"
+
+TEXT_QA_SYSTEM_PROMPT = ChatMessage(
+    content=(
+        "あなたは世界中で信頼されているQAシステムです。\n"
+        "事前知識ではなく、常に提供されたコンテキスト情報を使用してクエリに回答してください。\n"
+    ),
+    role=MessageRole.SYSTEM,
 )
 
-chain_type_kwargs = {"prompt": PROMPT}
+TEXT_QA_PROMPT_TMPL_MSGS = [
+    TEXT_QA_SYSTEM_PROMPT,
+    ChatMessage(
+        content=(
+            "コンテキスト情報は以下のとおりです。\n"
+            "---------------------\n"
+            "{context_str}\n"
+            "---------------------\n"
+            "事前知識ではなくコンテキスト情報を考慮して、クエリに答えます。\n"
+            "Query: {query_str}\n"
+            "Answer: "
+        ),
+        role=MessageRole.USER,
+    ),
+]
+
+CHAT_TEXT_QA_PROMPT = ChatPromptTemplate(message_templates=TEXT_QA_PROMPT_TMPL_MSGS)
 
 llm = HuggingFacePipeline(pipeline=pipe)
 
@@ -117,7 +136,7 @@ index = VectorStoreIndex.from_documents(
 
 query_engine = index.as_query_engine(
     similarity_top_k=3,
-    text_qa_template=PROMPT,
+    text_qa_template=CHAT_TEXT_QA_PROMPT,
 )
 
 def query(question):
