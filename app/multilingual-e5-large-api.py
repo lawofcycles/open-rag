@@ -36,28 +36,32 @@ embed_model = HuggingFaceBgeEmbeddings(
 
 import torch
 from llama_index.llms import HuggingFaceLLM
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
+from langchain.llms import HuggingFacePipeline
+import torch
 
-system_prompt = """以下は、タスクを説明する指示と、文脈のある入力の組み合わせです。要求を適切に満たす応答を書きなさい。"""
+B_INST, E_INST = "[INST]", "[/INST]"
+B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
+DEFAULT_SYSTEM_PROMPT = "あなたは誠実で優秀な日本人のアシスタントです。"
 
-# This will wrap the default prompts that are internal to llama-index
-prompt_string = """\n\n### 指示: \n{query_str}: \n\n\n### 応答"""
-query_wrapper_prompt = PromptTemplate.from_template(prompt_string)
+model_name = "elyza/ELYZA-japanese-Llama-2-7b-instruct"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype="auto")
 
-llm = HuggingFaceLLM(
-    context_window=1024,
-    max_new_tokens=256,
-    generate_kwargs={"temperature": 0.7, "do_sample": False},
-    system_prompt=system_prompt,
-    query_wrapper_prompt=query_wrapper_prompt,
-    tokenizer_name="novelai/nerdstash-tokenizer-v1",
-    model_name="stabilityai/japanese-stablelm-instruct-alpha-7b-v2",
-    device_map="auto",
-    stopping_ids=[50278, 50279, 50277, 1, 0],
-    tokenizer_kwargs={"max_length": 4096},
-    # uncomment this if using CUDA to reduce memory usage
-    # model_kwargs={"torch_dtype": torch.float16}
+if torch.cuda.is_available():
+    model = model.to("cuda")
+
+pipe = pipeline(
+    "text-generation",
+    model=model,
+    tokenizer=tokenizer,
+    max_length=2048,
+    temperature=0.6,
+    pad_token_id=tokenizer.eos_token_id,
+    top_p=0.95,
+    repetition_penalty=1.2,
 )
+llm = HuggingFacePipeline(pipeline=pipe)
 
 # ServiceContextの準備
 service_context = ServiceContext.from_defaults(
@@ -77,6 +81,31 @@ storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex.from_documents(documents,
                                      service_context=service_context,
                                      storage_context=storage_context)
+
+
+
+
+# system_prompt = """以下は、タスクを説明する指示と、文脈のある入力の組み合わせです。要求を適切に満たす応答を書きなさい。"""
+
+# # This will wrap the default prompts that are internal to llama-index
+# prompt_string = """\n\n### 指示: \n{query_str}: \n\n\n### 応答"""
+# query_wrapper_prompt = PromptTemplate.from_template(prompt_string)
+
+# llm = HuggingFaceLLM(
+#     context_window=1024,
+#     max_new_tokens=256,
+#     generate_kwargs={"temperature": 0.7, "do_sample": False},
+#     system_prompt=system_prompt,
+#     query_wrapper_prompt=query_wrapper_prompt,
+#     tokenizer_name="novelai/nerdstash-tokenizer-v1",
+#     model_name="stabilityai/japanese-stablelm-instruct-alpha-7b-v2",
+#     device_map="auto",
+#     stopping_ids=[50278, 50279, 50277, 1, 0],
+#     tokenizer_kwargs={"max_length": 4096},
+#     # uncomment this if using CUDA to reduce memory usage
+#     # model_kwargs={"torch_dtype": torch.float16}
+# )
+
 
 # # クエリエンジンの作成
 # query_engine = index.as_query_engine(
