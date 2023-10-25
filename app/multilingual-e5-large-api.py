@@ -87,7 +87,7 @@ pipe = pipeline(
     "text-generation",
     model=model,
     tokenizer=tokenizer,
-    # max_length=2094,
+    max_length=2220,
     # temperature=0.1,
     pad_token_id=tokenizer.eos_token_id,
     # do_sample=True,
@@ -122,10 +122,19 @@ CHAT_TEXT_QA_PROMPT = ChatPromptTemplate(message_templates=TEXT_QA_PROMPT_TMPL_M
 
 llm = HuggingFacePipeline(pipeline=pipe)
 
+text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
+    tokenizer,
+    chunk_size=4096-3,
+    chunk_overlap=20,  # オーバーラップの最大トークン数
+    separators=["\n= ", "\n== ", "\n=== ", "\n\n", "\n", "。", "「", "」", "！", "？", "、", "『", "』", "(", ")"," ", ""],
+)
+node_parser = SimpleNodeParser(text_splitter=text_splitter)
+
 # ServiceContextの準備
 service_context = ServiceContext.from_defaults(
     embed_model=embed_model,
     chunk_size=1024,
+    node_parser=node_parser,
     llm=llm,
 )
 
