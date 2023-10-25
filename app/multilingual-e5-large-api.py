@@ -62,9 +62,21 @@ loader = CJKPDFReader()
 documents = loader.load_data(file=persist_dir)
 
 embed_model_name = "intfloat/multilingual-e5-large"
-embed_model = HuggingFaceBgeEmbeddings(
-    model_name=embed_model_name,
-    )
+# query付きのHuggingFaceEmbeddings
+class HuggingFaceQueryEmbeddings(HuggingFaceEmbeddings):
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        return super().embed_documents(["query: " + text for text in texts])
+
+    def embed_query(self, text: str) -> List[float]:
+        return super().embed_query("query: " + text)
+
+# 埋め込みモデルの初期化
+embed_model = LangchainEmbedding(
+    HuggingFaceQueryEmbeddings(model_name=embed_model_name)
+)
 
 model_name = "elyza/ELYZA-japanese-Llama-2-7b-instruct"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
