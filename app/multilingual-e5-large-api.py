@@ -74,7 +74,7 @@ pipe = pipeline(
     "text-generation",
     model=model,
     tokenizer=tokenizer,
-    max_length=2220,
+    max_length=4096,
     # temperature=0.1,
     pad_token_id=tokenizer.eos_token_id,
     # do_sample=True,
