@@ -39,25 +39,41 @@ from llama_index.llms import HuggingFaceLLM
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
 from langchain.llms import HuggingFacePipeline
 import torch
+from transformers import AutoTokenizer,AutoModelForCausalLM
+import torch
 
-B_INST, E_INST = "[INST]", "[/INST]"
-B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-DEFAULT_SYSTEM_PROMPT = "あなたは誠実で優秀な日本人のアシスタントです。"
+from transformers import pipeline
+from langchain.llms import HuggingFacePipeline
 
-model_name = "elyza/ELYZA-japanese-Llama-2-7b-instruct"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16,device_map="auto")
+from langchain.embeddings import HuggingFaceEmbeddings
+from llama_index import LangchainEmbedding
+from typing import Any, List
 
+embed_model_name = "efederici/e5-base-multilingual-4096"
+llm_model_name = "lmsys/vicuna-13b-v1.5-16k"
+
+# トークナイザーの初期化
+tokenizer = AutoTokenizer.from_pretrained(
+    llm_model_name,
+    use_fast=True,
+)
+
+# LLMの読み込み
+model = AutoModelForCausalLM.from_pretrained(
+    llm_model_name,
+    torch_dtype=torch.float16,
+    device_map="auto",
+)
+
+# パイプラインの作成
 pipe = pipeline(
     "text-generation",
     model=model,
     tokenizer=tokenizer,
-    max_length=2094,
-    temperature=0.1,
-    pad_token_id=tokenizer.eos_token_id,
-    do_sample=True,
-    repetition_penalty=1.2,
+    max_new_tokens=4096,
 )
+
+# LLMの初期化
 llm = HuggingFacePipeline(pipeline=pipe)
 
 # # ServiceContextの準備
