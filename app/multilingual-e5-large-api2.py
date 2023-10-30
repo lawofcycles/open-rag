@@ -128,7 +128,7 @@ quantization_config = BitsAndBytesConfig(
 )
 
 # Model
-model = AutoModelForCausalLM.from_quantized(
+model = AutoModelForCausalLM.from_pretrained(
     MODEL_NAME,
     device_map="auto",
     use_auth_token=False,
