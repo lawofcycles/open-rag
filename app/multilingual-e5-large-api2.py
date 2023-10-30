@@ -117,7 +117,7 @@ model_name = "mmnga/ELYZA-japanese-Llama-2-7b-fast-instruct-GPTQ-calib-ja-2k"
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 
 # Model
-model = AutoGPTQForCausalLM.from_quantized(model_name, use_safetensors=True, device="cuda", use_auth_token=False)
+model = AutoGPTQForCausalLM.from_quantized(model_name, use_safetensors=True, device="cuda:0", use_auth_token=False)
 
 pipe = pipeline(
     "text-generation",
