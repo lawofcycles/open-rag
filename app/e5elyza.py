@@ -77,7 +77,7 @@ pipe = pipeline(
     max_new_tokens=512,
     do_sample=True,
     top_k=20,
-    temperature=0.7,
+    temperature=0.1,
     # device=device,
 )
 llm = HuggingFacePipeline(pipeline=pipe)
