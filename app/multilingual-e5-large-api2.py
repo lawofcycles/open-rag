@@ -175,14 +175,20 @@ CHAT_TEXT_QA_PROMPT = ChatPromptTemplate(message_templates=TEXT_QA_PROMPT_TMPL_M
 
 llm = HuggingFacePipeline(pipeline=pipe)
 
-text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
-    tokenizer,
+# 全文章を決まった長さの文章（チャンク）に分割して、文章データベースを作成
+text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
     chunk_size=300,
     chunk_overlap=20,
-    # separators=["\n= ", "\n== ", "\n=== ", "\n\n",
-    #              "\n", "。", "「", "」", "！",
-    #              "？", "、", "『", "』", "(", ")"," ", ""],
 )
+
+# text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
+#     tokenizer,
+#     chunk_size=300,
+#     chunk_overlap=20,
+#     # separators=["\n= ", "\n== ", "\n=== ", "\n\n",
+#     #              "\n", "。", "「", "」", "！",
+#     #              "？", "、", "『", "』", "(", ")"," ", ""],
+# )
 
 splitted_texts = text_splitter.split_documents(documents)
 print(f"チャンクの総数：{len(splitted_texts)}")
