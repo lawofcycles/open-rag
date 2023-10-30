@@ -188,7 +188,7 @@ index = VectorStoreIndex.from_documents(
 )
 
 from llama_index.callbacks import CBEventType
-print(event_pairs = llama_debug.get_event_pairs(CBEventType.CHUNKING))
+print(event_pairs = llama_debug_handler.get_event_pairs(CBEventType.CHUNKING))
 
 query_engine = index.as_query_engine(
     similarity_top_k=10,
