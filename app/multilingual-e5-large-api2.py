@@ -192,7 +192,10 @@ text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
 
 splitted_texts = text_splitter.split_documents(documents)
 print(f"チャンクの総数：{len(splitted_texts)}")
-print(f"チャンクされた文章の確認（参考に7番目にチャンクされたデータを確認）：\n{splitted_texts[3]}")
+print(f"チャンクされた文章の確認（1番目にチャンクされたデータ）：\n{splitted_texts[0]}")
+print(f"チャンクされた文章の確認（2番目にチャンクされたデータ）：\n{splitted_texts[1]}")
+print(f"チャンクされた文章の確認（3番目にチャンクされたデータ）：\n{splitted_texts[2]}")
+print(f"チャンクされた文章の確認（4番目にチャンクされたデータ）：\n{splitted_texts[3]}")
 
 node_parser = SimpleNodeParser(text_splitter=text_splitter)
 
