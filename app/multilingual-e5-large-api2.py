@@ -177,7 +177,7 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 # 全文章を決まった長さの文章（チャンク）に分割して、文章データベースを作成
 text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-    chunk_size=300,
+    chunk_size=600,
     chunk_overlap=20,
 )
 
