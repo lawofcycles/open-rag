@@ -174,44 +174,51 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
     tokenizer,
-    chunk_size=500-3,
-    chunk_overlap=20,  # オーバーラップの最大トークン数
-    separators=["\n= ", "\n== ", "\n=== ", "\n\n", "\n", "。", "「", "」", "！", "？", "、", "『", "』", "(", ")"," ", ""],
+    chunk_size=300,
+    chunk_overlap=20,
+    separators=["\n= ", "\n== ", "\n=== ", "\n\n",
+                 "\n", "。", "「", "」", "！",
+                 "？", "、", "『", "』", "(", ")"," ", ""],
 )
+
+splitted_texts = text_splitter.split_documents(documents)
+print(f"チャンクの総数：{len(splitted_texts)}")
+print(f"チャンクされた文章の確認（参考に7番目にチャンクされたデータを確認）：\n{splitted_texts[6]}")
+
 node_parser = SimpleNodeParser(text_splitter=text_splitter)
 
-from llama_index.callbacks import CallbackManager, LlamaDebugHandler
-llama_debug_handler = LlamaDebugHandler(print_trace_on_end=True)
-callback_manager = CallbackManager([llama_debug_handler])
+# from llama_index.callbacks import CallbackManager, LlamaDebugHandler
+# llama_debug_handler = LlamaDebugHandler(print_trace_on_end=True)
+# callback_manager = CallbackManager([llama_debug_handler])
 
-# ServiceContextの準備
-service_context = ServiceContext.from_defaults(
-    embed_model=embed_model,
-    chunk_size=1024,
-    node_parser=node_parser,
-    llm=llm,
-    callback_manager=callback_manager
-)
+# # ServiceContextの準備
+# service_context = ServiceContext.from_defaults(
+#     embed_model=embed_model,
+#     chunk_size=1024,
+#     node_parser=node_parser,
+#     llm=llm,
+#     callback_manager=callback_manager
+# )
 
-index = VectorStoreIndex.from_documents(
-    documents,
-    service_context=service_context,
-)
+# index = VectorStoreIndex.from_documents(
+#     documents,
+#     service_context=service_context,
+# )
 
-query_engine = index.as_query_engine(
-    similarity_top_k=10,
-    text_qa_template=CHAT_TEXT_QA_PROMPT,
-)
+# query_engine = index.as_query_engine(
+#     similarity_top_k=10,
+#     text_qa_template=CHAT_TEXT_QA_PROMPT,
+# )
 
-def query(question):
-    print(f"Q: {question}")
-    response = query_engine.query(question).response.strip()
-    print(f"A: {response}\n")
-    torch.cuda.empty_cache()
+# def query(question):
+#     print(f"Q: {question}")
+#     response = query_engine.query(question).response.strip()
+#     print(f"A: {response}\n")
+#     torch.cuda.empty_cache()
 
-query("マネロン・テロ資金供与対策におけるリスクベース・アプローチとは？")
+# query("マネロン・テロ資金供与対策におけるリスクベース・アプローチとは？")
 
-from llama_index.callbacks import CBEventType
-event_pairs = llama_debug_handler.get_event_pairs(CBEventType.CHUNKING)
-print(event_pairs[0][0].payload.keys())  # get first chunking start event
-print(event_pairs[0][1].payload.keys())  # get first chunking end event
+# from llama_index.callbacks import CBEventType
+# event_pairs = llama_debug_handler.get_event_pairs(CBEventType.CHUNKING)
+# print(event_pairs[0][0].payload.keys())  # get first chunking start event
+# print(event_pairs[0][1].payload.keys())  # get first chunking end event
