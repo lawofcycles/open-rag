@@ -187,6 +187,9 @@ index = VectorStoreIndex.from_documents(
     service_context=service_context,
 )
 
+from llama_index.callbacks import CBEventType
+print(llama_debug_handler.get_event_pairs(CBEventType.CHUNKING))
+
 query_engine = index.as_query_engine(
     similarity_top_k=10,
     text_qa_template=CHAT_TEXT_QA_PROMPT,
@@ -200,8 +203,6 @@ def query(question):
 
 query("リスクベースのアプローチとは？")
 
-from llama_index.callbacks import CBEventType
-llama_debug_handler.get_event_pairs(CBEventType.CHUNKING)[0]
 
 # service_context = ServiceContext.from_defaults(
 #     llm=llm,
