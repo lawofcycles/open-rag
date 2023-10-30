@@ -187,9 +187,6 @@ index = VectorStoreIndex.from_documents(
     service_context=service_context,
 )
 
-from llama_index.callbacks import CBEventType
-print(event_pairs = llama_debug_handler.get_event_pairs(CBEventType.CHUNKING))
-
 query_engine = index.as_query_engine(
     similarity_top_k=10,
     text_qa_template=CHAT_TEXT_QA_PROMPT,
@@ -202,6 +199,11 @@ def query(question):
     torch.cuda.empty_cache()
 
 query("リスクベースのアプローチとは？")
+
+from llama_index.callbacks import CBEventType
+event_pairs = llama_debug_handler.get_event_pairs(CBEventType.CHUNKING)
+print(event_pairs[0][0].payload.keys())  # get first chunking start event
+print(event_pairs[0][1].payload.keys())  # get first chunking end event
 
 
 # service_context = ServiceContext.from_defaults(
