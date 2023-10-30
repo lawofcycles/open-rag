@@ -169,17 +169,18 @@ text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
 )
 node_parser = SimpleNodeParser(text_splitter=text_splitter)
 
+from llama_index.callbacks import CallbackManager, LlamaDebugHandler
+llama_debug_handler = LlamaDebugHandler()
+callback_manager = CallbackManager([llama_debug_handler])
+
 # ServiceContextの準備
 service_context = ServiceContext.from_defaults(
     embed_model=embed_model,
     chunk_size=1024,
     node_parser=node_parser,
     llm=llm,
+    callback_manager=callback_manager
 )
-
-from llama_index.callbacks import CallbackManager, LlamaDebugHandler
-llama_debug_handler = LlamaDebugHandler()
-callback_manager = CallbackManager([llama_debug_handler])
 
 index = VectorStoreIndex.from_documents(
     documents,
