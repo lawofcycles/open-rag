@@ -186,7 +186,7 @@ text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
 
 splitted_texts = text_splitter.split_documents(documents)
 print(f"チャンクの総数：{len(splitted_texts)}")
-print(f"チャンクされた文章の確認（参考に7番目にチャンクされたデータを確認）：\n{splitted_texts[6]}")
+print(f"チャンクされた文章の確認（参考に7番目にチャンクされたデータを確認）：\n{splitted_texts[3]}")
 
 node_parser = SimpleNodeParser(text_splitter=text_splitter)
 
