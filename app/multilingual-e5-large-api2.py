@@ -88,13 +88,16 @@ from langchain.callbacks         import get_openai_callback
 from langchain.callbacks.manager import (AsyncCallbackManagerForToolRun, CallbackManagerForToolRun)
 from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
 from transformers import AutoTokenizer
+from langchain.document_loaders import UnstructuredFileLoader
 
 # data source
 PERSIST_DIR = "./resource/211122_amlcft_guidelines.pdf"
 
-CJKPDFReader = download_loader("CJKPDFReader")
-loader = CJKPDFReader()
-documents = loader.load_data(file=PERSIST_DIR)
+loader = UnstructuredFileLoader(PERSIST_DIR)
+documents = loader.load()
+print(f"number of docs: {len(documents)}")
+print("--------------------------------------------------")
+print(documents[0].page_content)
 
 # embed model
 EMBED_MODEL_NAME = "intfloat/multilingual-e5-large"
