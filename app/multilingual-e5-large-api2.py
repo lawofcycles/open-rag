@@ -200,7 +200,7 @@ def query(question):
 query("リスクベースのアプローチとは？")
 
 from llama_index.callbacks import CBEventType
-print(llama_debug_handler.get_event_pairs(CBEventType.LLM))
+llama_debug_handler.get_event_pairs(CBEventType.CHUNKING)[0]
 
 # service_context = ServiceContext.from_defaults(
 #     llm=llm,
