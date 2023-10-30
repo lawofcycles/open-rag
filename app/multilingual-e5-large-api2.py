@@ -22,6 +22,8 @@ from transformers import (
     BitsAndBytesConfig,
     pipeline,
 )
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
 # import QueryBundle
 from llama_index import QueryBundle
@@ -87,14 +89,16 @@ from langchain.callbacks.manager import (AsyncCallbackManagerForToolRun, Callbac
 from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
 from transformers import AutoTokenizer
 
-persist_dir = "./resource/211122_amlcft_guidelines.pdf"
+# data source
+PERSIST_DIR = "./resource/211122_amlcft_guidelines.pdf"
 
 CJKPDFReader = download_loader("CJKPDFReader")
-
 loader = CJKPDFReader()
-documents = loader.load_data(file=persist_dir)
+documents = loader.load_data(file=PERSIST_DIR)
 
-embed_model_name = "intfloat/multilingual-e5-large"
+# embed model
+EMBED_MODEL_NAME = "intfloat/multilingual-e5-large"
+
 # query付きのHuggingFaceEmbeddings
 class HuggingFaceQueryEmbeddings(HuggingFaceEmbeddings):
     def __init__(self, **kwargs: Any):
@@ -106,27 +110,37 @@ class HuggingFaceQueryEmbeddings(HuggingFaceEmbeddings):
     def embed_query(self, text: str) -> List[float]:
         return super().embed_query("query: " + text)
 
-# 埋め込みモデルの初期化
 embed_model = LangchainEmbedding(
-    HuggingFaceQueryEmbeddings(model_name=embed_model_name)
+    HuggingFaceQueryEmbeddings(model_name=EMBED_MODEL_NAME)
 )
 
-model_name = "mmnga/ELYZA-japanese-Llama-2-7b-fast-instruct-GPTQ-calib-ja-2k"
+# setup LLM
+MODEL_NAME = "elyza/ELYZA-japanese-Llama-2-7b-fast-instruct"
 
 # Tokenizer
-tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
+
+quantization_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16,
+)
 
 # Model
-model = AutoGPTQForCausalLM.from_quantized(model_name, use_safetensors=True, device="cuda:0", use_auth_token=False)
+model = AutoModelForCausalLM.from_quantized(
+    MODEL_NAME,
+    device_map="auto",
+    use_auth_token=False,
+    quantization_config=quantization_config,
+).eval()
 
 pipe = pipeline(
     "text-generation",
     model=model,
     tokenizer=tokenizer,
-    max_new_tokens=500,
-    # temperature=0.1,
+    max_new_tokens=2000,
     pad_token_id=tokenizer.eos_token_id,
-    # do_sample=True,
     repetition_penalty=1.2,
 )
 
@@ -134,9 +148,6 @@ TEXT_QA_SYSTEM_PROMPT = ChatMessage(
     content=(
         "あなたは世界中で信頼されているQAシステムです。\n"
         "事前知識ではなく、常に提供されたコンテキスト情報を使用してクエリに回答してください。\n"
-        "従うべきいくつかのルール:\n"
-        "1. 回答内で指定されたコンテキストを直接参照しないでください。\n"
-        "2. 「コンテキストに基づいて、...」や「コンテキスト情報は...」、またはそれに類するような記述は避けてください。"
     ),
     role=MessageRole.SYSTEM,
 )
@@ -149,7 +160,7 @@ TEXT_QA_PROMPT_TMPL_MSGS = [
             "---------------------\n"
             "{context_str}\n"
             "---------------------\n"
-            "事前知識ではなくコンテキスト情報を考慮して、クエリに答えます。\n"
+            "事前知識ではなくコンテキスト情報のみを考慮して、Queryに答えてください。\n"
             "Query: {query_str}\n"
             "Answer: "
         ),
@@ -198,121 +209,9 @@ def query(question):
     print(f"A: {response}\n")
     torch.cuda.empty_cache()
 
-query("リスクベースのアプローチとは？")
+query("マネロン・テロ資金供与対策におけるリスクベース・アプローチとは？")
 
 from llama_index.callbacks import CBEventType
 event_pairs = llama_debug_handler.get_event_pairs(CBEventType.CHUNKING)
 print(event_pairs[0][0].payload.keys())  # get first chunking start event
 print(event_pairs[0][1].payload.keys())  # get first chunking end event
-
-
-# service_context = ServiceContext.from_defaults(
-#     llm=llm,
-#     embed_model=embed_model,
-#     node_parser=node_parser,
-#     callback_manager=callback_manager,
-# )
-
-# # クエリエンジンの準備
-# query_engine = index.as_query_engine(
-#     similarity_top_k=3,
-#     text_qa_template=CHAT_TEXT_QA_PROMPT,
-#     refine_template=CHAT_REFINE_PROMPT,
-# )
-
-
-# def query(question):
-#     print(f"Q: {question}")
-#     response = query_engine.query(question).response.strip()
-#     print(f"A: {response}\n")
-#     torch.cuda.empty_cache()
-
-
-
-
-# system_prompt = """以下は、タスクを説明する指示と、文脈のある入力の組み合わせです。要求を適切に満たす応答を書きなさい。"""
-
-# # This will wrap the default prompts that are internal to llama-index
-# prompt_string = """\n\n### 指示: \n{query_str}: \n\n\n### 応答"""
-# query_wrapper_prompt = PromptTemplate.from_template(prompt_string)
-
-# llm = HuggingFaceLLM(
-#     context_window=1024,
-#     max_new_tokens=256,
-#     generate_kwargs={"temperature": 0.7, "do_sample": False},
-#     system_prompt=system_prompt,
-#     query_wrapper_prompt=query_wrapper_prompt,
-#     tokenizer_name="novelai/nerdstash-tokenizer-v1",
-#     model_name="stabilityai/japanese-stablelm-instruct-alpha-7b-v2",
-#     device_map="auto",
-#     stopping_ids=[50278, 50279, 50277, 1, 0],
-#     tokenizer_kwargs={"max_length": 4096},
-#     # uncomment this if using CUDA to reduce memory usage
-#     # model_kwargs={"torch_dtype": torch.float16}
-# )
-
-
-# # クエリエンジンの作成
-# query_engine = index.as_query_engine(
-#     similarity_top_k=3  # 取得するチャンク数 (default:2)
-# )
-
-# response = query_engine.query("リスクベースのアプローチとは？")
-# print(response)
-
-# if not os.path.exists(persist_dir):
-#     os.mkdir(persist_dir)
-# documents = SimpleDirectoryReader("data").load_data()
-# index = GPTVectorStoreIndex.from_documents(documents)
-# index.storage_context.persist(persist_dir)
-
-
-
-# from langchain.embeddings import HuggingFaceEmbeddings
-# from llama_index import GPTVectorStoreIndex, ServiceContext, LangchainEmbedding
-
-# # 埋め込みモデルの準備
-# embed_model = LangchainEmbedding(HuggingFaceEmbeddings(
-#     model_name="intfloat/multilingual-e5-large"
-# ))
-
-# # ServiceContextの準備
-# service_context = ServiceContext.from_defaults(
-#     embed_model=embed_model
-# )
-
-# # インデックスの生成
-# index = GPTVectorStoreIndex.from_documents(
-#     documents, # ドキュメント
-#     service_context=service_context, # ServiceContext
-# )
-
-
-
-
-# app = Flask(__name__)
-# tokenizer = AutoTokenizer.from_pretrained('intfloat/multilingual-e5-large')
-# model = AutoModel.from_pretrained('intfloat/multilingual-e5-large')
-
-# @app.route("/embeddings", methods=["POST"])
-# def get_embeddings():
-#     content = request.json
-#     input_texts = content["text"]
-#     # Tokenize the input texts
-#     batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
-
-#     outputs = model(**batch_dict)
-#     embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
-
-#     # normalize embeddings
-#     embeddings = F.normalize(embeddings, p=2, dim=1)
-#     scores = (embeddings[:2] @ embeddings[2:].T) * 100
-#     return jsonify({"embeddings": scores.tolist()})
-
-# def average_pool(last_hidden_states: Tensor,
-#                  attention_mask: Tensor) -> Tensor:
-#     last_hidden = last_hidden_states.masked_fill(~attention_mask[..., None].bool(), 0.0)
-#     return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
-
-# if __name__ == "__main__":
-#     app.run(debug=True)
