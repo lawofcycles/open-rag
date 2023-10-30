@@ -59,7 +59,7 @@ class ElyzaCT2LLM(CTranslate2):
         "sampling_topk": 20,
         "sampling_temperature": 0.7,
         "include_prompt_in_result": False,
-}
+    }
 
     def _generate(
         self,
@@ -89,7 +89,7 @@ class ElyzaCT2LLM(CTranslate2):
 llm_ct2 = ElyzaCT2LLM(
     model_path="ct2_model",
     tokenizer_name=MODEL_NAME,
-    device="cuda",
+    device_map="auto",
     device_index=[0],
     compute_type="int8",
 )
