@@ -179,9 +179,9 @@ text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
     tokenizer,
     chunk_size=300,
     chunk_overlap=20,
-    separators=["\n= ", "\n== ", "\n=== ", "\n\n",
-                 "\n", "。", "「", "」", "！",
-                 "？", "、", "『", "』", "(", ")"," ", ""],
+    # separators=["\n= ", "\n== ", "\n=== ", "\n\n",
+    #              "\n", "。", "「", "」", "！",
+    #              "？", "、", "『", "』", "(", ")"," ", ""],
 )
 
 splitted_texts = text_splitter.split_documents(documents)
