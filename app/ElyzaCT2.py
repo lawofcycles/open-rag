@@ -23,21 +23,11 @@ loader = UnstructuredFileLoader(PERSIST_DIR)
 documents = loader.load()
 print(f"number of docs: {len(documents)}")
 print("--------------------------------------------------")
-print(documents[0].page_content)
 
 text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
     chunk_size=600,
     chunk_overlap=20,
 )
-
-# text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
-#     tokenizer,
-#     chunk_size=300,
-#     chunk_overlap=20,
-#     # separators=["\n= ", "\n== ", "\n=== ", "\n\n",
-#     #              "\n", "。", "「", "」", "！",
-#     #              "？", "、", "『", "』", "(", ")"," ", ""],
-# )
 
 splitted_texts = text_splitter.split_documents(documents)
 print(f"チャンクの総数：{len(splitted_texts)}")
@@ -62,27 +52,50 @@ for i in range(len(docs)):
 # setup LLM
 MODEL_NAME = "elyza/ELYZA-japanese-Llama-2-7b-fast-instruct"
 
+## ELYZA LLama2 + Ctranslate2 (7B)
+class ElyzaCT2LLM(CTranslate2):
+    generator_params = {
+        "max_length": 256,
+        "sampling_topk": 20,
+        "sampling_temperature": 0.7,
+        "include_prompt_in_result": False,
+}
+
+    def _generate(
+        self,
+        prompts: List[str],
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        **kwargs: Any,
+    ) -> LLMResult:
+        encoded_prompts = self.tokenizer(prompts, add_special_tokens=False)["input_ids"]
+        tokenized_prompts = [
+            self.tokenizer.convert_ids_to_tokens(encoded_prompt)
+            for encoded_prompt in encoded_prompts
+        ]
+
+        # 指定したパラメータで文書生成を制御
+        results = self.client.generate_batch(tokenized_prompts, **self.generator_params)
+
+        sequences = [result.sequences_ids[0] for result in results]
+        decoded_sequences = [self.tokenizer.decode(seq) for seq in sequences]
+
+        generations = []
+        for text in decoded_sequences:
+            generations.append([Generation(text=text)])
+
+        return LLMResult(generations=generations)
+
+llm_ct2 = ElyzaCT2LLM(
+    model_path="ct2_model",
+    tokenizer_name=MODEL_NAME,
+    device="cuda",
+    device_index=[0],
+    compute_type="int8",
+)
+
 # Tokenizer
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
-
-# Model
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME,
-    device_map="auto",
-    torch_dtype=torch.float16
-)
-
-pipe = pipeline(
-    "text-generation",
-    model=model,
-    tokenizer=tokenizer,
-    max_new_tokens=512,
-    do_sample=True,
-    top_k=20,
-    temperature=0.7,
-    # device=device,
-)
-llm = HuggingFacePipeline(pipeline=pipe)
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
@@ -99,19 +112,16 @@ rag_prompt_custom = PromptTemplate(
     template=template, input_variables=["context", "question"]
 )
 
-# チェーンの準備
-chain = load_qa_chain(llm, chain_type="stuff", prompt=rag_prompt_custom)
+chain = load_qa_chain(llm_ct2, chain_type="stuff", prompt=rag_prompt_custom)
 
-# RAG ありの場合
 start = time.time()
-# ベクトル検索結果の上位3件と質問内容を入力として、elyzaで文章生成
 inputs = {"input_documents": docs, "question": question}
 output = chain.run(inputs)
 elapsed_time = time.time() - start
 print("RAGあり")
 print(f"処理時間[s]: {elapsed_time:.2f}")
 print(f"出力内容：\n{output}")
-print(f"トークン数: {llm.get_num_tokens(output)}")
+print(f"トークン数: {llm_ct2.get_num_tokens(output)}")
 
 ###################################################
 # メモリの解放
