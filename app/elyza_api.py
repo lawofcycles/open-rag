@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 import asyncio
 import torch
+import time
 from transformers import pipeline
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from langchain.llms import HuggingFacePipeline
@@ -8,12 +9,20 @@ from langchain import PromptTemplate, LLMChain
 import copy
 from langchain.chains.question_answering import load_qa_chain
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import FAISS
 
 app = FastAPI(
     title="Inference API for ELYZA",
     description="A simple API that use elyza/ELYZA-japanese-Llama-2-7b-fast-instruct as a chatbot",
     version="1.0",
 )
+
+# embed model
+EMBED_MODEL_NAME = "intfloat/multilingual-e5-large"
+embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
+
+db = FAISS.load_local("faiss_index", embeddings)
 
 MODEL_NAME = "elyza/ELYZA-japanese-Llama-2-7b-fast-instruct"
 # Tokenizer
@@ -51,11 +60,26 @@ template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
 rag_prompt_custom = PromptTemplate(
     template=template, input_variables=["context", "question"]
 )
-chain = LLMChain(llm=llm, prompt=rag_prompt_custom)
+
+# チェーンの準備
+chain = load_qa_chain(llm, chain_type="stuff", prompt=rag_prompt_custom)
 
 @app.get('/model')
-async def model():
-    inputs = {"input_documents": "結城友奈は勇者である", "question": "結城友奈はなんですか？"}
-    res = chain.run({"input_documents": "結城友奈は勇者である", "question": "結城友奈はなんですか？"})
+async def model(question : str):
+    start = time.time()
+    docs = db.similarity_search(question, k=3)
+    elapsed_time = time.time() - start
+    print(f"検索処理時間[s]: {elapsed_time:.2f}")
+    for i in range(len(docs)):
+        print(docs[i])
+
+    start = time.time()
+    # ベクトル検索結果の上位3件と質問内容を入力として、elyzaで文章生成
+    inputs = {"input_documents": docs, "question": question}
+    output = chain.run(inputs)
+    res = chain.run(inputs)
     result = copy.deepcopy(res)
+    print(f"テキスト生成処理時間[s]: {elapsed_time:.2f}")
+    for i in range(len(docs)):
+        print(docs[i])
     return {"result" : result}
