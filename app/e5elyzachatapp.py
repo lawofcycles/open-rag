@@ -37,7 +37,7 @@ for message in st.session_state.messages:
             st.markdown(message["content"])
 
 # Accept user input
-if myprompt := st.chat_input("ご質問をどうぞ?"):
+if myprompt := st.chat_input("ご質問をどうぞ"):
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": myprompt})
     # Display user message in chat message container
