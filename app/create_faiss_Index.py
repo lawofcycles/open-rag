@@ -42,4 +42,4 @@ EMBED_MODEL_NAME = "intfloat/multilingual-e5-large"
 embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
 
 db = FAISS.from_documents(splitted_texts, embeddings)
-db.save_local(args.arg1)
+db.save_local("faiss_index/" + args.arg1)
