@@ -76,7 +76,7 @@ chain = load_qa_chain(llm, chain_type="stuff", prompt=rag_prompt_custom)
 # RAG ありの場合
 start = time.time()
 # ベクトル検索結果の上位3件と質問内容を入力として、elyzaで文章生成
-inputs = {"input_documents": "結城友奈は勇者である", "question": "結城友奈はなんですか？"}
+inputs = {"input_documents": docs, "question": question}
 output = chain.run(inputs)
 elapsed_time = time.time() - start
 print("RAGあり")

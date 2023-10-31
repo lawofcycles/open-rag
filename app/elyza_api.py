@@ -55,7 +55,7 @@ chain = load_qa_chain(llm, chain_type="stuff", prompt=rag_prompt_custom)
 
 @app.get('/model')
 async def model():
-    inputs = {"input_documents": "", "question": ""}
+    inputs = {"input_documents": "結城友奈は勇者である", "question": "結城友奈はなんですか？"}
     res = chain.run(inputs)
     result = copy.deepcopy(res)
     return {"result" : result}
