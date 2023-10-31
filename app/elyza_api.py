@@ -23,7 +23,7 @@ EMBED_MODEL_NAME = "intfloat/multilingual-e5-large"
 embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
 
 # db = FAISS.load_local("../faiss_index", embeddings)
-db = FAISS.load_local("../faiss_index/fiscguide", embeddings)
+db = FAISS.load_local("faiss_index/fiscguide", embeddings)
 
 MODEL_NAME = "elyza/ELYZA-japanese-Llama-2-7b-fast-instruct"
 # Tokenizer
