@@ -51,7 +51,7 @@ template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
 rag_prompt_custom = PromptTemplate(
     template=template, input_variables=["context", "question"]
 )
-chain = load_qa_chain(llm, prompt=rag_prompt_custom)
+chain = LLMChain(llm, prompt=rag_prompt_custom)
 
 @app.get('/model')
 async def model():
