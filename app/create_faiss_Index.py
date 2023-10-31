@@ -9,6 +9,7 @@ parser = argparse.ArgumentParser(description='引数のPDFのパスを読み込�
 
 # 引数の追加
 parser.add_argument('arg1', type=str, help='pdfのパス')
+parser.add_argument('arg2', type=str, help='indexの名前')
 args = parser.parse_args()
 
 # data source
@@ -42,4 +43,4 @@ EMBED_MODEL_NAME = "intfloat/multilingual-e5-large"
 embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
 
 db = FAISS.from_documents(splitted_texts, embeddings)
-db.save_local("faiss_index/" + args.arg1)
+db.save_local("faiss_index/" + args.arg2)
