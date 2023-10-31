@@ -23,9 +23,7 @@ print("--------------------------------------------------")
 text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
     chunk_size=600,
     chunk_overlap=20,
-    separators=["\n= ", "\n== ", "\n=== ", "\n\n",
-                "\n", "。", "「", "」", "！",
-                "？", "、", "『", "』", "(", ")"," ", ""],
+    separators=["\n\n\n","\n\n","\n"],
 )
 
 # text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
