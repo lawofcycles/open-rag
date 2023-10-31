@@ -47,7 +47,7 @@ embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
 
 db = FAISS.from_documents(splitted_texts, embeddings)
 
-question = "リスクベースのアプローチとはなんですか。"
+question = "カスタマー・デュー・ディリジェンスとはなんですか。"
 
 start = time.time()
 # 質問に対して、データベース中の類似度上位3件を抽出。質問の文章はこの関数でベクトル化され利用される
@@ -74,7 +74,7 @@ pipe = pipeline(
     "text-generation",
     model=model,
     tokenizer=tokenizer,
-    max_new_tokens=512,
+    max_new_tokens=1024,
     do_sample=True,
     top_k=20,
     temperature=0.1,
