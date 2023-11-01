@@ -4,7 +4,7 @@ from time import  sleep
 import requests 
 import streamlit as st
 
-sources = []
+st.session_state['sources'] = []
 
 # #AVATARS
 # av_us = './man.png'  #"🦖"  #A single emoji, e.g. "🧑‍💻", "🤖", "🦖". Shortcodes are not supported.
@@ -99,13 +99,13 @@ if uploaded_file is not None:
 
         db = FAISS.from_documents(splitted_texts, embeddings)
         db.save_local("faiss_index/" + uploaded_file.name)
-        sources.append(uploaded_file.name)
+        st.session_state.sources.append(uploaded_file.name)
     st.success('indexing completed')
 
 # selectbox
 option = st.selectbox(
     'choose source file:',
-    sources
+    st.session_state.sources
 )
 
 st.write('You selected: ', option)
