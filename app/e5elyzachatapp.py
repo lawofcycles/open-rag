@@ -51,7 +51,7 @@ if myprompt := st.chat_input("ご質問をどうぞ"):
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
-        apiresponse = requests.get(f'http://127.0.0.1:8000/model?source={uploaded_file.name}&question={myprompt}')
+        apiresponse = requests.get(f'http://127.0.0.1:8000/model?source={st.session_state.source}&question={myprompt}')
         risposta = apiresponse.content.decode("utf-8")
         res  =  risposta[1:-1]
         response = res.split(" ")
