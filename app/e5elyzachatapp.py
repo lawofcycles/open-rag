@@ -4,6 +4,8 @@ from time import  sleep
 import requests 
 import streamlit as st
 
+sources = []
+
 # #AVATARS
 # av_us = './man.png'  #"🦖"  #A single emoji, e.g. "🧑‍💻", "🤖", "🦖". Shortcodes are not supported.
 # av_ass = './lamini.png'
@@ -71,7 +73,7 @@ from langchain.vectorstores import FAISS
 import argparse
 import os
 if uploaded_file is not None:
-    with st.spinner('Wait for it...'):
+    with st.spinner('Wait for indexing...'):
         file_details = {"FileName":uploaded_file.name,"FileType":uploaded_file.type}
         st.write(file_details)
         with open(os.path.join("resource",uploaded_file.name),"wb") as f: 
@@ -97,5 +99,14 @@ if uploaded_file is not None:
 
         db = FAISS.from_documents(splitted_texts, embeddings)
         db.save_local("faiss_index/" + uploaded_file.name)
-    st.success('load file completed')
+        sources.append(uploaded_file.name)
+    st.success('indexing completed')
+
+# selectbox
+option = st.selectbox(
+    'choose source file:',
+    sources
+)
+
+st.write('You selected: ', option)
 
