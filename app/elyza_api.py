@@ -49,8 +49,8 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-DEFAULT_SYSTEM_PROMPT = "参考情報を元に、ユーザーからの質問に簡潔に正確に答えてください。"
-text = "{context}\nユーザからの質問は次のとおりです。{question}"
+DEFAULT_SYSTEM_PROMPT = "参考情報だけを元にして、ユーザーからの質問に簡潔に正確に答えてください。参考情報から答えられない質問には「わかりません」と答えてください。"
+text = "参考情報:{context}\nユーザからの質問は次のとおりです:{question}"
 template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
     bos_token=tokenizer.bos_token,
     b_inst=B_INST,
@@ -69,7 +69,7 @@ chain = load_qa_chain(llm, chain_type="stuff", prompt=rag_prompt_custom)
 async def model(question : str):
     start = time.time()
     db = FAISS.load_local("faiss_index/mufgir", embeddings)
-    docs = db.similarity_search(question, k=3)
+    docs = db.similarity_search(question, k=5)
     elapsed_time = time.time() - start
     print(f"検索処理時間[s]: {elapsed_time:.2f}")
     for i in range(len(docs)):
