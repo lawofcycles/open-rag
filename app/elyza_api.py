@@ -3,9 +3,9 @@ import asyncio
 import torch
 import time
 from transformers import pipeline
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import AutoTokenizer
 from langchain.llms import HuggingFacePipeline
-from langchain import PromptTemplate, LLMChain
+from langchain import PromptTemplate
 import copy
 from langchain.chains.question_answering import load_qa_chain
 from transformers import AutoTokenizer, AutoModelForCausalLM
