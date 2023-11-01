@@ -19,7 +19,7 @@ def writehistory(text):
 
 
 st.title("OSS RAG ChatBot")
-st.subheader("Using model intfloat/multilingual-e5-large and elyza/ELYZA-japanese-Llama-2-7b-fast-instruct")
+st.subheader("intfloat/multilingual-e5-largeとelyza/ELYZA-japanese-Llama-2-7b-fast-instructによるRAGアプリです。最初に参照したいpdfファイルをアップロードしてください")
 
 # Set a default model
 # if "hf_model" not in st.session_state:
@@ -40,6 +40,10 @@ for message in st.session_state.messages:
 
 # Accept user input
 if myprompt := st.chat_input("ご質問をどうぞ"):
+
+    if st.session_state.source == None:
+        st.chat_input("先にファイルをアップロードしてください")
+
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": myprompt})
     # Display user message in chat message container
