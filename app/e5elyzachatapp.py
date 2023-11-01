@@ -70,7 +70,6 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 import argparse
 if uploaded_file is not None:
-    # st.write(uploaded_file)
-    loader = UnstructuredFileLoader(uploaded_file)
+    st.write(uploaded_file)
+    loader = UnstructuredFileLoader(uploaded_file.getvalue())
     documents = loader.load()
-    
