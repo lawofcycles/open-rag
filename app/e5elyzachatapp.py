@@ -61,3 +61,16 @@ if myprompt := st.chat_input("ご質問をどうぞ"):
         asstext = f"assistant: {full_response}"
         writehistory(asstext)
         st.session_state.messages.append({"role": "assistant", "content": full_response})
+
+uploaded_file = st.file_uploader('Choose a source pdf')
+
+from langchain.document_loaders import UnstructuredFileLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import FAISS
+import argparse
+if uploaded_file is not None:
+    # st.write(uploaded_file)
+    loader = UnstructuredFileLoader(uploaded_file)
+    documents = loader.load()
+    
