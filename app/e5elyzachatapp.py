@@ -91,7 +91,7 @@ if uploaded_file is not None:
         )
         splitted_texts = text_splitter.split_documents(documents)
         print(f"チャンクの総数：{len(splitted_texts)}")
-        print(f"チャンクされた文章の確認（20番目にチャンクされたデータ）：\n{splitted_texts[20]}")
+        print(f"チャンクされた文章の確認（1番目にチャンクされたデータ）：\n{splitted_texts[0]}")
 
         # embed model
         EMBED_MODEL_NAME = "intfloat/multilingual-e5-large"
