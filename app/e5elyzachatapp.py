@@ -71,11 +71,11 @@ from langchain.vectorstores import FAISS
 import argparse
 import os
 if uploaded_file is not None:
-    loader = UnstructuredFileLoader(uploaded_file.getvalue())
-    documents = loader.load()
-
     file_details = {"FileName":uploaded_file.name,"FileType":uploaded_file.type}
     st.write(file_details)
     with open(os.path.join("resource",uploaded_file.name),"wb") as f: 
-      f.write(uploaded_file.getbuffer())
-      st.success("Saved File")
+        f.write(uploaded_file.getbuffer())
+        st.success("Saved File")
+
+    # loader = UnstructuredFileLoader(uploaded_file.getvalue())
+    # documents = loader.load()
