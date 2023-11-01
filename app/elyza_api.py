@@ -68,8 +68,8 @@ chain = load_qa_chain(llm, chain_type="stuff", prompt=rag_prompt_custom)
 @app.get('/model')
 async def model(question : str):
     start = time.time()
-    # db = FAISS.load_local("faiss_index/" + source, embeddings)
-    # docs = db.similarity_search(question, k=3)
+    db = FAISS.load_local("faiss_index/fiscguide", embeddings)
+    docs = db.similarity_search(question, k=3)
     elapsed_time = time.time() - start
     print(f"検索処理時間[s]: {elapsed_time:.2f}")
     for i in range(len(docs)):
