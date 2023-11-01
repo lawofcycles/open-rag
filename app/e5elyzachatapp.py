@@ -4,7 +4,7 @@ from time import  sleep
 import requests 
 import streamlit as st
 
-st.session_state['sources'] = []
+st.session_state['source'] = []
 
 # #AVATARS
 # av_us = './man.png'  #"🦖"  #A single emoji, e.g. "🧑‍💻", "🤖", "🦖". Shortcodes are not supported.
@@ -51,7 +51,7 @@ if myprompt := st.chat_input("ご質問をどうぞ"):
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
-        apiresponse = requests.get(f'http://127.0.0.1:8000/model?question={myprompt}')
+        apiresponse = requests.get(f'http://127.0.0.1:8000/model?source={uploaded_file.name}&question={myprompt}')
         risposta = apiresponse.content.decode("utf-8")
         res  =  risposta[1:-1]
         response = res.split(" ")
@@ -99,14 +99,6 @@ if uploaded_file is not None:
 
         db = FAISS.from_documents(splitted_texts, embeddings)
         db.save_local("faiss_index/" + uploaded_file.name)
-        st.session_state.sources.append(uploaded_file.name)
+        st.session_state.source.append(uploaded_file.name)
     st.success('indexing completed')
-
-# selectbox
-option = st.selectbox(
-    'choose source file:',
-    st.session_state.sources
-)
-
-st.write('You selected: ', option)
 
