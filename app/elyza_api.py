@@ -49,7 +49,7 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-DEFAULT_SYSTEM_PROMPT = "参考情報だけを元にして、ユーザーからの質問に簡潔に正確に答えてください。参考情報から答えられない質問には「わかりません」と答えてください。"
+DEFAULT_SYSTEM_PROMPT = "参考情報だけを元にして、ユーザーからの質問に答えてください。参考情報で答えられない質問には「参考情報に記載がないのでわかりません」と答えてください。"
 text = "参考情報:{context}\nユーザからの質問は次のとおりです:{question}"
 template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
     bos_token=tokenizer.bos_token,
