@@ -50,9 +50,9 @@ llm = HuggingFacePipeline(pipeline=pipe)
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
 DEFAULT_SYSTEM_PROMPT = """参考情報だけを元にして、ユーザーからの質問に答えてください。\n
-        回答する上で以下のルールに従ってください。\n
+        以下のルールに従ってください。\n
         - 参考情報で答えられない質問には「参考情報に記載がないのでわかりません」と答えてください\n
-        - 「承知しました。ユーザーからの質問に回答いたします。」などと前置きせずに質問に答えてください\n
+        - 「承知しました。ユーザーからの質問に回答いたします。」と前置きしないでください\n
         - ユーザーからの質問をそのまま繰り返さないでください\n"""
 text = "参考情報:{context}\nユーザからの質問は次のとおりです:{question}"
 template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
