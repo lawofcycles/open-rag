@@ -84,4 +84,4 @@ async def model(question : str):
     print(f"テキスト生成処理時間[s]: {elapsed_time:.2f}")
     for i in range(len(docs)):
         print(docs[i])
-    return result.replace('\n\n', '')
+    return result.replace('\n\n', '').replace('\n', '')
