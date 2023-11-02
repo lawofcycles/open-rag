@@ -43,6 +43,7 @@ pipe = pipeline(
     do_sample=True,
     top_k=20,
     temperature=0.1,
+    repetition_penalty=1.0,
     # device=device,
 )
 llm = HuggingFacePipeline(pipeline=pipe)
@@ -53,7 +54,7 @@ DEFAULT_SYSTEM_PROMPT = """参考情報だけを元にして、ユーザーか�
         以下のルールに従ってください。\n
         - 参考情報で答えられない質問には「参考情報に記載がないのでわかりません」と答えてください\n
         - 「承知しました。ユーザーからの質問に回答いたします。」と前置きしないでください\n
-        - ユーザーからの質問をそのまま繰り返さないでください\n"""
+        - ユーザーからの質問を繰り返さないでください\n"""
 text = "参考情報:{context}\nユーザからの質問は次のとおりです:{question}"
 template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
     bos_token=tokenizer.bos_token,
