@@ -1,0 +1,12 @@
+[Unit]
+Description=Streamlit front page
+After=network.target
+
+[Service]
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/home/ec2-user/open-rag
+ExecStart=/home/ec2-user/myenv/bin/python -m streamlit run app/e5elyzachatapp.py
+
+[Install]
+WantedBy=multi-user.target
