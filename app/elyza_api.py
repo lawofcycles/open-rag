@@ -22,9 +22,6 @@ app = FastAPI(
 EMBED_MODEL_NAME = "intfloat/multilingual-e5-large"
 embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
 
-db = FAISS.load_local("faiss_index/mufgfaq", embeddings)
-#db = FAISS.load_local("faiss_index/fiscguide", embeddings)
-
 MODEL_NAME = "elyza/ELYZA-japanese-Llama-2-7b-fast-instruct"
 # Tokenizer
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
@@ -72,7 +69,7 @@ chain = load_qa_chain(llm, chain_type="stuff", prompt=rag_prompt_custom)
 @app.get('/model')
 async def model(question : str):
     start = time.time()
-    db = FAISS.load_local("faiss_index/mufgir", embeddings)
+    db = FAISS.load_local("faiss_index/mufgfaq", embeddings)
     docs = db.similarity_search(question, k=3)
     elapsed_time = time.time() - start
     print(f"検索処理時間[s]: {elapsed_time:.2f}")
