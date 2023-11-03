@@ -30,7 +30,7 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_NAME,
     device_map="auto",
-    # torch_dtype=torch.float16
+    torch_dtype=torch.float16
 )
 pipe = pipeline(
     "text-generation",
