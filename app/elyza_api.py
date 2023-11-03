@@ -50,7 +50,8 @@ B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
 DEFAULT_SYSTEM_PROMPT = """あなたは三菱UFJ銀行のQAボットシステムです。参考情報を元にして、質問に答えてください。\n
         以下のルールに従ってください。\n
         - 回答の冒頭で「承知しました。ユーザーからの質問に回答いたします。」と答えないでください\n
-        - ユーザーからの質問を復唱しないでください\n"""
+        - ユーザーからの質問を繰り返さないでください\n
+        - 必要に応じて改行を入れて読みやすくしてください\n"""
 text = "参考情報:{context}\nユーザからの質問は次のとおりです:{question}"
 template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
     bos_token=tokenizer.bos_token,
