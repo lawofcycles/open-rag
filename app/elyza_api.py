@@ -36,11 +36,11 @@ pipe = pipeline(
     "text-generation",
     model=model,
     tokenizer=tokenizer,
-    max_new_tokens=1024,
-    do_sample=True,
-    top_k=20,
-    temperature=0.1,
-    repetition_penalty=1.0,
+    max_new_tokens=4096,
+    # do_sample=True,
+    # top_k=20,
+    # temperature=0.1,
+    # repetition_penalty=1.0,
     # device=device,
 )
 llm = HuggingFacePipeline(pipeline=pipe)
