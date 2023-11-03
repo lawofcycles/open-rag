@@ -40,7 +40,7 @@ pipe = pipeline(
     # do_sample=True,
     # top_k=20,
     # temperature=0.1,
-    # repetition_penalty=1.0,
+    repetition_penalty=1.0,
     # device=device,
 )
 llm = HuggingFacePipeline(pipeline=pipe)
