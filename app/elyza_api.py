@@ -37,17 +37,17 @@ pipe = pipeline(
     model=model,
     tokenizer=tokenizer,
     max_new_tokens=4096,
-    # do_sample=True,
-    # top_k=20,
-    # temperature=0.1,
-    repetition_penalty=1.0,
+    do_sample=True,
+    top_k=20,
+    temperature=0.1,
+    repetition_penalty=1.0, 
     # device=device,
 )
 llm = HuggingFacePipeline(pipeline=pipe)
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-DEFAULT_SYSTEM_PROMPT = """あなたは銀行のQAボットシステムです。参考情報を元にして、質問に答えてください。\n
+DEFAULT_SYSTEM_PROMPT = """あなたは銀行のQAボットです。参考情報を元にして、質問に答えてください。\n
         以下のルールに従ってください。\n
         - 質問を繰り返さないでください\n
         - 必要に応じて改行を入れて読みやすくしてください\n"""
