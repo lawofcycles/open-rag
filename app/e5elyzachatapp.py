@@ -17,7 +17,7 @@ def writehistory(text):
 
 
 st.title("OSS RAG ChatBot")
-st.subheader("intfloat/multilingual-e5-largeとelyza/ELYZA-japanese-Llama-2-7b-fast-instructを使った金融機関向け AWS FISC安全対策基準対応リファレンスのRAGです。\n ")
+st.subheader("intfloat/multilingual-e5-largeとelyza/ELYZA-japanese-Llama-2-7b-fast-instructを使ったMUFG FAQのRAGです。\n ")
 
 # Set a default model
 # if "hf_model" not in st.session_state:

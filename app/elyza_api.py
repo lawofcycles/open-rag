@@ -22,7 +22,7 @@ app = FastAPI(
 EMBED_MODEL_NAME = "intfloat/multilingual-e5-large"
 embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
 
-db = FAISS.load_local("faiss_index/mufgir", embeddings)
+db = FAISS.load_local("faiss_index/mufgfaq", embeddings)
 #db = FAISS.load_local("faiss_index/fiscguide", embeddings)
 
 MODEL_NAME = "elyza/ELYZA-japanese-Llama-2-7b-fast-instruct"
@@ -50,7 +50,7 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-DEFAULT_SYSTEM_PROMPT = """ユーザーからの参考情報だけを元にして、質問に答えてください。\n
+DEFAULT_SYSTEM_PROMPT = """あなたは三菱UFJ銀行のQAボットシステムです。参考情報を元にして、質問に答えてください。\n
         以下のルールに従ってください。\n
         - 回答の冒頭で「承知しました。ユーザーからの質問に回答いたします。」と答えないでください\n
         - ユーザーからの質問を復唱しないでください\n"""
