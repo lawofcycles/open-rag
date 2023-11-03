@@ -40,7 +40,7 @@ def get_qa(question_url):
             link_url = part['href']
             link_with_url = f"{link_text}({link_url})"
             answer_parts.append(link_with_url)
-            last_text = link_with_url
+            last_text = link_text
         elif part.string and part.string.strip():
             current_text = part.string.strip()
             if current_text != last_text:
@@ -49,7 +49,6 @@ def get_qa(question_url):
                 last_text = current_text
 
     # 回答の内容を抽出
-    # answer_content_text = ' '.join(answer_content.stripped_strings)
     answer_content_text = ' '.join(answer_parts)
 
     def has_border_left(style):
