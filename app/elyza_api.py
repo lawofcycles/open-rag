@@ -83,6 +83,7 @@ async def model(question : str):
     res = chain.run(inputs)
     result = copy.deepcopy(res)
     print(f"テキスト生成処理時間[s]: {elapsed_time:.2f}")
+    print(f"出力内容：\n{result}")
     for i in range(len(docs)):
         print(docs[i])
     return result.replace('\n\n', '').replace('\n', '')
