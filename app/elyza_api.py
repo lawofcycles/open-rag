@@ -47,12 +47,11 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-DEFAULT_SYSTEM_PROMPT = """あなたは三菱UFJ銀行のQAボットシステムです。参考情報を元にして、質問に答えてください。\n
+DEFAULT_SYSTEM_PROMPT = """あなたは銀行のQAボットシステムです。参考情報を元にして、質問に答えてください。\n
         以下のルールに従ってください。\n
-        - 回答の冒頭で「承知しました。ユーザーからの質問に回答いたします。」と答えないでください\n
-        - ユーザーからの質問を繰り返さないでください\n
+        - 質問を繰り返さないでください\n
         - 必要に応じて改行を入れて読みやすくしてください\n"""
-text = "参考情報:{context}\nユーザからの質問は次のとおりです:{question}"
+text = "参考情報:{context}\n質問:{question}"
 template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
     bos_token=tokenizer.bos_token,
     b_inst=B_INST,
@@ -82,8 +81,7 @@ async def model(question : str):
     inputs = {"input_documents": docs, "question": question}
     res = chain.run(inputs)
     result = copy.deepcopy(res)
+    elapsed_time = time.time() - start
     print(f"テキスト生成処理時間[s]: {elapsed_time:.2f}")
     print(f"出力内容：\n{result}")
-    for i in range(len(docs)):
-        print(docs[i])
     return result.replace('\n\n', '').replace('\n', '')
