@@ -70,7 +70,7 @@ chain = load_qa_chain(llm, chain_type="stuff", prompt=rag_prompt_custom)
 async def model(question : str):
     start = time.time()
     db = FAISS.load_local("faiss_index/mufgfaq", embeddings)
-    docs = db.similarity_search(question, k=3)
+    docs = db.similarity_search(question, k=1)
     elapsed_time = time.time() - start
     print(f"検索処理時間[s]: {elapsed_time:.2f}")
     for i in range(len(docs)):
@@ -79,7 +79,6 @@ async def model(question : str):
     start = time.time()
     # ベクトル検索結果の上位3件と質問内容を入力として、elyzaで文章生成
     inputs = {"input_documents": docs, "question": question}
-    output = chain.run(inputs)
     res = chain.run(inputs)
     result = copy.deepcopy(res)
     print(f"テキスト生成処理時間[s]: {elapsed_time:.2f}")
