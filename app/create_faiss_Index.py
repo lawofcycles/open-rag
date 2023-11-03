@@ -24,7 +24,7 @@ text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
     chunk_size=600,
     chunk_overlap=20,
     separators=["\n\n\n","\n\n","\n"],
-)langchain.chains.LLMChain 
+)
 
 # text_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
 #     tokenizer,
