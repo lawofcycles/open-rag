@@ -30,7 +30,7 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_NAME,
     device_map="auto",
-    torch_dtype=torch.float16
+    # torch_dtype=torch.float16
 )
 pipe = pipeline(
     "text-generation",
@@ -70,7 +70,7 @@ chain = load_qa_chain(llm, chain_type="stuff", prompt=rag_prompt_custom)
 async def model(question : str):
     start = time.time()
     db = FAISS.load_local("faiss_index/mufgfaq", embeddings)
-    docs = db.similarity_search(question, k=3)
+    docs = db.similarity_search(question, k=2)
     elapsed_time = time.time() - start
     print(f"検索処理時間[s]: {elapsed_time:.2f}")
     for i in range(len(docs)):
