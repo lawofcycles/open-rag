@@ -12,6 +12,16 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 
+import logging
+
+# ロガーの設定
+logger = logging.getLogger("uvicorn.error")
+handler = logging.StreamHandler()
+formatter = logging.Formatter("%(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
 app = FastAPI(
     title="Inference API for ELYZA",
     description="A simple API that use elyza/ELYZA-japanese-Llama-2-7b-fast-instruct as a chatbot",
@@ -71,9 +81,9 @@ async def model(question : str):
     db = FAISS.load_local("faiss_index/mufgfaq", embeddings)
     docs = db.similarity_search(question, k=2)
     elapsed_time = time.time() - start
-    print(f"検索処理時間[s]: {elapsed_time:.2f}")
+    logger.info(f"検索処理時間[s]: {elapsed_time:.2f}")
     for i in range(len(docs)):
-        print(docs[i])
+        logger.info(docs[i])
 
     start = time.time()
     # ベクトル検索結果の上位3件と質問内容を入力として、elyzaで文章生成
@@ -81,6 +91,6 @@ async def model(question : str):
     res = chain.run(inputs)
     result = copy.deepcopy(res)
     elapsed_time = time.time() - start
-    print(f"テキスト生成処理時間[s]: {elapsed_time:.2f}")
-    print(f"出力内容：\n{result}")
+    logger.info(f"テキスト生成処理時間[s]: {elapsed_time:.2f}")
+    logger.info(f"出力内容：\n{result}")
     return result.replace('\n\n', '').replace('\n', '')
