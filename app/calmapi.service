@@ -1,0 +1,13 @@
+[Unit]
+Description=RAG API with intfloat/multilingual-e5-large and elyza/ELYZA-japanese-Llama-2-7b-fast-instruct
+After=network.target
+
+[Service]
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/home/ec2-user/open-rag
+ExecStart=/home/ec2-user/myenv/bin/gunicorn -w 1 -k uvicorn.workers.UvicornWorker app.calm_api:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
