@@ -54,12 +54,13 @@ pipe = pipeline(
     do_sample=True,
     temperature=0.1,
     streamer=streamer,
+    repetition_penalty=10.0,
 )
 llm = HuggingFacePipeline(pipeline=pipe)
 
 USER = "USER: "
 SYS = "ASSISTANT: "
-text = "コンテキストだけを元に質問に答えてください。コンテキストを元に回答できない質問には「わかりません」と答えてください \nコンテキスト:{context}\n質問:{question}\n"
+text = "あなたは銀行のQA botです。あなたがユーザの質問に答えるための参考情報として、ユーザの質問に関連するコンテクスト情報を示します。コンテクスト情報だけを元に質問に答えてください。コンテキストを元に回答できない質問には「わかりません」と答えてください \nコンテキスト情報:[{context}]\n質問:{question}\n"
 template = "{USER}{text}{SYS}".format(
     USER=USER,
     text=text,
@@ -76,7 +77,7 @@ chain = load_qa_chain(llm, chain_type="stuff", prompt=rag_prompt_custom)
 @app.get('/model')
 async def model(question : str):
     start = time.time()
-    db = FAISS.load_local("faiss_index/mufgfaq", embeddings)
+    db = FAISS.load_local("faiss_index/mufgfaq2", embeddings)
     docs = db.similarity_search(question, k=2)
     elapsed_time = time.time() - start
     logger.info(f"検索処理時間[s]: {elapsed_time:.2f}")
