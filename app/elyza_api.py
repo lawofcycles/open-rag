@@ -56,11 +56,11 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-DEFAULT_SYSTEM_PROMPT = """あなたは銀行のQAボットです。参考情報を元にして、質問に答えてください。\n
+DEFAULT_SYSTEM_PROMPT = """あなたは銀行のQAボットです。対応マニュアルを元にして、質問に答えてください。\n
         以下のルールに従ってください。\n
         - 質問を繰り返さないでください\n
-        - 必要に応じて改行を入れて読みやすくしてください\n"""
-text = "参考情報:{context}\n質問:{question}"
+        - 回答に改行を入れてください\n"""
+text = "対応マニュアル:[{context}]\n質問:{question}"
 template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
     bos_token=tokenizer.bos_token,
     b_inst=B_INST,
