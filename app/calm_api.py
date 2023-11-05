@@ -60,7 +60,7 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 USER = "USER: "
 SYS = "ASSISTANT: "
-text = "私の質問に答えるための参考情報として、ユーザの質問に関連するcontextを示します。contextだけを元に質問に答えてください。contextを元に回答できない質問には「わかりません」と答えてください \ncontext:[{context}]\n質問:{question}\n"
+text = "私の質問に答えるための参考情報として、ユーザの質問に関連するcontextを示します。contextだけを元に質問に答えてください。contextを元に回答できない質問には「わかりません」と答えてください \ncontext:{context}\n質問:{question}\n"
 template = "{USER}{text}{SYS}".format(
     USER=USER,
     text=text,
