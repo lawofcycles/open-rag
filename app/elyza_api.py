@@ -60,7 +60,7 @@ DEFAULT_SYSTEM_PROMPT = """あなたは銀行のQAボットです。対応マニ
         以下のルールに従ってください。\n
         - 質問を繰り返さないでください\n
         - 回答に改行を入れてください\n"""
-text = "対応マニュアル:{context}\n質問:{question}"
+text = "質問:{question}\n対応マニュアル:{context}\n"
 template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
     bos_token=tokenizer.bos_token,
     b_inst=B_INST,
