@@ -56,7 +56,7 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-DEFAULT_SYSTEM_PROMPT = """あなたは銀行のQAボットです。対応マニュアルを元にして、質問に答えてください。\n
+DEFAULT_SYSTEM_PROMPT = """あなたは銀行のQAボットです。対応マニュアルを要約して、質問に答えてください。\n
         以下のルールに従ってください。\n
         - 質問を繰り返さないでください\n
         - 回答に改行を入れてください\n"""
