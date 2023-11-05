@@ -77,6 +77,7 @@ chain = load_qa_chain(llm, chain_type="stuff", prompt=rag_prompt_custom)
 
 @app.get('/model')
 async def model(question : str):
+    logger.info(f"質問：\n{question}")
     start = time.time()
     db = FAISS.load_local("faiss_index/mufgfaq", embeddings)
     docs = db.similarity_search(question, k=2)
