@@ -90,5 +90,4 @@ async def query(question : str):
     elapsed_time = time.time() - start
     logger.info("テキスト生成処理時間[s]: %.2f", elapsed_time)
     logger.info("テキスト生成結果:\n%s", result)
-    # return result.replace('\n\n', '').replace('\n', '')
-    return result.replace('\n', '\n\n')
+    return result

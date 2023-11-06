@@ -34,6 +34,7 @@ if myprompt := st.chat_input("ご質問をどうぞ"):
         res = requests.get(f'http://127.0.0.1:8000/query?question={myprompt}', timeout=120)
         message = res.content.decode("utf-8")
         message  =  message[1:-1]
+        message = message("\\n\\n", "\n")
         for r in message:
             full_response = full_response + r + " "
             message_placeholder.markdown(full_response + "▌")
