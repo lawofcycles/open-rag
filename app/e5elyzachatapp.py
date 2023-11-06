@@ -3,7 +3,7 @@ import requests
 import streamlit as st
 
 st.title("OSS RAG ChatBot")
-st.markdown("""##### intfloat/multilingual-e5-largeとelyza/ELYZA-japanese-Llama-2-7b-fast-instructを使ったMUFG FAQ(https://faq01.bk.mufg.jp/?site_domain=default)のRAGです""")
+st.markdown("""##### intfloat/multilingual-e5-largeとelyza/ELYZA-japanese-Llama-2-7b-fast-instructを使ったMUFG FAQ(https://faq01.bk.mufg.jp/?site_domain=default )のRAGです""")
 
 # 履歴を保存するsession_state
 # Streamlitはユーザが画面を操作するたびにスクリプト全体が再実行されるが、session_stateの値は保持される
@@ -32,7 +32,15 @@ if myprompt := st.chat_input("ご質問をどうぞ"):
         message_placeholder = st.empty()
         full_response = ""
         res = requests.get(f'http://127.0.0.1:8000/query?question={myprompt}', timeout=120)
-        message = res.content.decode("utf-8")
+        if res.status_code != 200:
+            raise Exception(f"API call failed with status code {res.status_code} and message {res.text}")
+        data = res.json()
+        response = data["response"]
+        vector_search_result = data["vector_search_result"]
+        search_time = data["search_time"]
+        generation_time = data["generation_time"]
+
+        message = response.content.decode("utf-8")
         message  =  message[1:-1]
         message = message.replace("\\n\\n", "\n")
         message = message.replace("\\n", "\n")
