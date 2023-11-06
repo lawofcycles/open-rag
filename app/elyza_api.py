@@ -56,11 +56,12 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-DEFAULT_SYSTEM_PROMPT = """あなたは銀行のQAボットです。対応マニュアルを要約して、質問に答えてください。\n
+DEFAULT_SYSTEM_PROMPT = """あなたは銀行のQAボットです。QAマニュアルを要約して、ユーザからの質問に答えてください。\n
         以下のルールに従ってください。\n
-        - 質問を繰り返さないでください\n
+        - ユーザからの質問を繰り返さないでください\n
+        - QAマニュアルに回答が見つからない場合「わかりません」とだけ答えてください\n
         - 回答に改行を入れてください\n"""
-text = "質問:{question}\n対応マニュアル:{context}\n"
+text = "ユーザからの質問:{question}\nQAマニュアル:{context}\n"
 template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
     bos_token=tokenizer.bos_token,
     b_inst=B_INST,
@@ -79,7 +80,7 @@ chain = load_qa_chain(llm, chain_type="stuff", prompt=rag_prompt_custom)
 async def model(question : str):
     logger.info(f"質問：\n{question}")
     start = time.time()
-    db = FAISS.load_local("faiss_index/mufgfaq", embeddings)
+    db = FAISS.load_local("faiss_index/mufgfaq3", embeddings)
     docs = db.similarity_search(question, k=2)
     elapsed_time = time.time() - start
     logger.info(f"検索処理時間[s]: {elapsed_time:.2f}")
