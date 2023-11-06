@@ -3,7 +3,7 @@ import requests
 import streamlit as st
 
 st.title("OSS RAG ChatBot")
-st.markdown("""### intfloat/multilingual-e5-largeとelyza/ELYZA-japanese-Llama-2-7b-fast-instructを使ったMUFG FAQのRAGです""")
+st.markdown("""##### intfloat/multilingual-e5-largeとelyza/ELYZA-japanese-Llama-2-7b-fast-instructを使ったMUFG FAQのRAGです""")
 
 # 履歴を保存するsession_state
 # Streamlitはユーザが画面を操作するたびにスクリプト全体が再実行されるが、session_stateの値は保持される
@@ -33,6 +33,7 @@ if myprompt := st.chat_input("ご質問をどうぞ"):
         full_response = ""
         res = requests.get(f'http://127.0.0.1:8000/query?question={myprompt}', timeout=120)
         message = res.content.decode("utf-8")
+        message  =  message[1:-1]
         for r in message:
             full_response = full_response + r + " "
             message_placeholder.markdown(full_response + "▌")
