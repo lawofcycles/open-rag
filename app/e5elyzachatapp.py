@@ -35,12 +35,12 @@ if myprompt := st.chat_input("ご質問をどうぞ"):
         if res.status_code != 200:
             raise Exception(f"API call failed with status code {res.status_code} and message {res.text}")
         data = res.json()
-        response = data["response"]
+        response = data["message"]
         vector_search_result = data["vector_search_result"]
         search_time = data["search_time"]
         generation_time = data["generation_time"]
 
-        message = response.content.decode("utf-8")
+        message = response
         message  =  message[1:-1]
         message = message.replace("\\n\\n", "\n")
         message = message.replace("\\n", "\n")

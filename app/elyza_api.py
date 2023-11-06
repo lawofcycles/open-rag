@@ -90,7 +90,7 @@ async def query(question : str):
     generation_time = time.time() - start
     logger.info("テキスト生成処理時間[s]: %.2f", generation_time)
     logger.info("テキスト生成結果:\n%s", result)
-    return {"response": result,
+    return {"message": result,
             "vector_search_result": docs,
             "search_time": search_time,
             "generation_time": generation_time}
