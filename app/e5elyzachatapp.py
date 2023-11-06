@@ -49,8 +49,9 @@ if myprompt := st.chat_input("ご質問をどうぞ"):
             message_placeholder.markdown(full_response + "▌")
             sleep(0.01)
         message_placeholder.markdown(full_response)
-        st.markdown("Vector Search Time: " + str(search_time))
-        st.markdown("Generation Time: " + str(generation_time))
-        st.markdown("Vector Search Result: " + str(vector_search_result))
+        st.markdown("""---
+                    Vector Search Time: " %s\n
+                    Generation Time: %s\n
+                    Vector Search Result: %s\n""" % (search_time, generation_time, vector_search_result))
         asstext = f"assistant: {full_response}"
         st.session_state.messages.append({"role": "assistant", "content": full_response})
