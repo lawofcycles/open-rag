@@ -50,7 +50,7 @@ pipe = pipeline(
     do_sample=False,
     top_p=0.95,
     top_k=50,
-    temperature=0.1,
+    temperature=1,
     repetition_penalty=1.0, 
 )
 llm = HuggingFacePipeline(pipeline=pipe)
