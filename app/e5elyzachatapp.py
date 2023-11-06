@@ -36,7 +36,7 @@ if myprompt := st.chat_input("ご質問をどうぞ"):
         message  =  message[1:-1]
         message = message.replace("\\n\\n", "\n")
         for r in message:
-            full_response = full_response + r + " "
+            full_response = full_response + r
             message_placeholder.markdown(full_response + "▌")
             sleep(0.1)
         message_placeholder.markdown(full_response)
