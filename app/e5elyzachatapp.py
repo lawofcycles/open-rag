@@ -3,7 +3,7 @@ import requests
 import streamlit as st
 
 st.title("OSS RAG ChatBot")
-st.text("intfloat/multilingual-e5-largeとelyza/ELYZA-japanese-Llama-2-7b-fast-instructを使ったMUFG FAQのRAGです\n ")
+st.markdown("""### intfloat/multilingual-e5-largeとelyza/ELYZA-japanese-Llama-2-7b-fast-instructを使ったMUFG FAQのRAGです""")
 
 # 履歴を保存するsession_state
 # Streamlitはユーザが画面を操作するたびにスクリプト全体が再実行されるが、session_stateの値は保持される
