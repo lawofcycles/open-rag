@@ -1,5 +1,11 @@
-from fastapi import FastAPI, Request
-import asyncio
+import logging
+from threading import Thread
+from typing import Iterator
+
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+
+from fastapi import FastAPI
 import torch
 import time
 from transformers import pipeline
@@ -13,8 +19,6 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 
 import logging
-
-# ロガーの設定
 logger = logging.getLogger("uvicorn.error")
 handler = logging.StreamHandler()
 formatter = logging.Formatter("%(levelname)s - %(message)s")
@@ -24,21 +28,20 @@ logger.setLevel(logging.INFO)
 
 app = FastAPI(
     title="Inference API for ELYZA",
-    description="A simple API that use elyza/ELYZA-japanese-Llama-2-7b-fast-instruct as a chatbot",
+    description="A simple API that with intfloat/multilingual-e5-large and elyza/ELYZA-japanese-Llama-2-7b-fast-instruct",
     version="1.0",
 )
-
 # embed model
 EMBED_MODEL_NAME = "intfloat/multilingual-e5-large"
 embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL_NAME)
 
-MODEL_NAME = "elyza/ELYZA-japanese-Llama-2-7b-fast-instruct"
+MODEL_ID = "elyza/ELYZA-japanese-Llama-2-7b-instruct"
 # Tokenizer
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=True)
 
 # Model
 model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME,
+    MODEL_ID,
     device_map="auto",
     torch_dtype=torch.float16
 )
@@ -60,9 +63,10 @@ B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
 DEFAULT_SYSTEM_PROMPT = """あなたは銀行のQAボットです。knowledgeのanswerを要約して、ユーザからの質問に答えてください。\n
         以下のルールに絶対に従いなさい：\n
         - ユーザからの質問をそのまま回答に含めないでください\n
-        - 事前に知っている知識を用いず、knowledgeに記載のある情報だけを答えてください。knowledgeにユーザからの質問への回答が見つからない場合、「申し訳ありませんがわかりません」とだけ回答してください\n\n
-        -----------------------------------------------------------\n\n"""
-text = "ユーザからの質問:{question}\nknowledge:{context}\n"
+        - 事前に知っている知識を用いず、knowledgeに記載のある情報だけを答えてください\n
+        - knowledgeにユーザからの質問への回答が見つからない場合、「申し訳ありませんがわかりません」とだけ回答してください\n"""
+text = """ユーザからの質問: {question}\n
+        knowledge: {context}\n"""
 template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
     bos_token=tokenizer.bos_token,
     b_inst=B_INST,
@@ -71,7 +75,7 @@ template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
     e_inst=E_INST,
 )
 rag_prompt_custom = PromptTemplate(
-    template=template, input_variables=["context", "question"]
+    template=template, input_variables=["question","context"]
 )
 
 # チェーンの準備
