@@ -38,7 +38,7 @@ if myprompt := st.chat_input("ご質問をどうぞ"):
         for r in message:
             full_response = full_response + r
             message_placeholder.markdown(full_response + "▌")
-            sleep(0.1)
+            sleep(0.01)
         message_placeholder.markdown(full_response)
         asstext = f"assistant: {full_response}"
         st.session_state.messages.append({"role": "assistant", "content": full_response})
