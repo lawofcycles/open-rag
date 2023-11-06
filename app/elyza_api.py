@@ -81,7 +81,7 @@ async def model(question : str):
     logger.info(f"質問：\n{question}")
     start = time.time()
     db = FAISS.load_local("faiss_index/mufgfaq3", embeddings)
-    docs = db.similarity_search(question, k=2)
+    docs = db.similarity_search(question, k=1)
     elapsed_time = time.time() - start
     logger.info(f"検索処理時間[s]: {elapsed_time:.2f}")
     for i in range(len(docs)):
