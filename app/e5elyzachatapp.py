@@ -1,34 +1,17 @@
-# Internal usage
 from time import  sleep
-#### IMPORTS FOR AI PIPELINES 
 import requests 
 import streamlit as st
 
-# #AVATARS
-# av_us = './man.png'  #"🦖"  #A single emoji, e.g. "🧑‍💻", "🤖", "🦖". Shortcodes are not supported.
-# av_ass = './lamini.png'
-
-# FUNCTION TO LOG ALL CHAT MESSAGES INTO chathistory.txt
-def writehistory(text):
-    with open('chathistory.txt', 'a') as f:
-        f.write(text)
-        f.write('\n')
-    f.close()
-
-
 st.title("OSS RAG ChatBot")
-st.subheader("intfloat/multilingual-e5-largeとelyza/ELYZA-japanese-Llama-2-7b-fast-instructを使ったMUFG FAQのRAGです\n ")
+st.text("intfloat/multilingual-e5-largeとelyza/ELYZA-japanese-Llama-2-7b-fast-instructを使ったMUFG FAQのRAGです\n ")
 
-# Set a default model
-# if "hf_model" not in st.session_state:
-#     st.session_state["hf_model"] = "MBZUAI/LaMini-Flan-T5-77M"
-
-# Initialize chat history
+# 履歴を保存するsession_state
+# Streamlitはユーザが画面を操作するたびにスクリプト全体が再実行されるが、session_stateの値は保持される
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display chat messages from history on app rerun
 for message in st.session_state.messages:
+    # role ごとに表示を変えたい場合は編集
     if message["role"] == "user":
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
@@ -36,28 +19,26 @@ for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-# Accept user input
+# チャット入力欄
 if myprompt := st.chat_input("ご質問をどうぞ"):
-    # Add user message to chat history
+    # ユーザメッセージを履歴に追加
     st.session_state.messages.append({"role": "user", "content": myprompt})
-    # Display user message in chat message container
+    # ユーザメッセージを画面に表示
     with st.chat_message("user"):
         st.markdown(myprompt)
         usertext = f"user: {myprompt}"
-        writehistory(usertext)
-    # Display assistant response in chat message container
+    # Chat Botの応答を画面に表示
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
-        apiresponse = requests.get(f'http://127.0.0.1:8000/query?question={myprompt}')
-        risposta = apiresponse.content.decode("utf-8")
-        res  =  risposta[1:-1]
-        response = res.split(" ")
-        for r in response:
+        res = requests.get(f'http://127.0.0.1:8000/query?question={myprompt}', timeout=120)
+        message = res.content.decode("utf-8")
+        message  =  message[1:-1]
+        # message = message.split(" ")
+        for r in message:
             full_response = full_response + r + " "
             message_placeholder.markdown(full_response + "▌")
             sleep(0.1)
         message_placeholder.markdown(full_response)
         asstext = f"assistant: {full_response}"
-        writehistory(asstext)
         st.session_state.messages.append({"role": "assistant", "content": full_response})
