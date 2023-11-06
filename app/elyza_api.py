@@ -78,7 +78,7 @@ async def query(question : str):
     db = FAISS.load_local("faiss_index/mufgfaq3", embeddings)
     docs = db.similarity_search(question, k=1)
     search_time = time.time() - start
-    logger.info("テキスト生成処理時間[s]: %.2f", elapsed_time)
+    logger.info("テキスト生成処理時間[s]: %.2f", search_time)
     logger.info("検索結果:")
     for _, doc in enumerate(docs):
         logger.info(doc)
@@ -88,7 +88,7 @@ async def query(question : str):
     res = chain.run(inputs)
     result = copy.deepcopy(res)
     generation_time = time.time() - start
-    logger.info("テキスト生成処理時間[s]: %.2f", elapsed_time)
+    logger.info("テキスト生成処理時間[s]: %.2f", generation_time)
     logger.info("テキスト生成結果:\n%s", result)
     return {"response": result,
             "vector_search_result": docs,
