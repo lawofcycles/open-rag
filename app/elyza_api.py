@@ -57,12 +57,12 @@ llm = HuggingFacePipeline(pipeline=pipe)
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-DEFAULT_SYSTEM_PROMPT = """あなたは銀行のQAボットです。QAマニュアルを要約して、ユーザからの質問に答えてください。\n
+DEFAULT_SYSTEM_PROMPT = """あなたは銀行のQAボットです。knowledgeのanswerを要約して、ユーザからの質問に答えてください。\n
         以下のルールに絶対に従いなさい：\n
         - ユーザからの質問をそのまま回答に含めないでください\n
-        - 事前に知っている知識を用いず、QAマニュアルに記載のある情報だけを答えてください。QAマニュアルにユーザからの質問への回答が見つからない場合、「申し訳ありませんがわかりません」とだけ回答してください\n\n
+        - 事前に知っている知識を用いず、knowledgeに記載のある情報だけを答えてください。knowledgeにユーザからの質問への回答が見つからない場合、「申し訳ありませんがわかりません」とだけ回答してください\n\n
         -----------------------------------------------------------\n\n"""
-text = "ユーザからの質問:{question}\nQAマニュアル:{context}\n"
+text = "ユーザからの質問:{question}\nknowledge:{context}\n"
 template = "{bos_token}{b_inst} {system}{prompt} {e_inst} ".format(
     bos_token=tokenizer.bos_token,
     b_inst=B_INST,
